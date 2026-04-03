@@ -311,12 +311,25 @@ function renderStats(s, loan) {
 }
 
 function calcLoanStats(loan) {
-  const bal = parseFloat(loan.balance)||0, rate = parseFloat(loan.rate)||0, pmt = parseFloat(loan.payment)||0, extra = parseFloat(loan.extraPayment)||0;
+  const bal = parseFloat(loan.balance)||0, rate = parseFloat(loan.rate)||0, pmt = parseFloat(loan.payment)||0, extra = parseFloat(loan.extraPayment)||0, termMax = parseInt(loan.term)||600;
   if (!bal || !pmt) return {totalWithout:0,totalWith:0,savingsTotal:0,monthsWithout:0,monthsWith:0,overPayWithout:0,overPayWith:0,monthsSaved:0};
   const mr = rate/100/12;
-  let b1=bal,m1=0,paid1=0; for(let i=0;i<600&&b1>0;i++){const int=mr?b1*mr:0;const pr=pmt-int;if(pr<=0&&mr){m1=999;break;}b1-=Math.min(pr,b1);if(b1<0)b1=0;paid1+=pmt;m1++;if(b1<=0)break;}
-  let b2=bal,m2=0; for(let i=0;i<600&&b2>0;i++){const int=mr?b2*mr:0;const pr=pmt+extra-int;b2-=Math.min(pr,b2);if(b2<0)b2=0;m2++;if(b2<=0)break;}
-  const tw=m1*pmt,twEx=m2*(pmt+extra);
+  // Без досрочных
+  let b1=bal,m1=0; 
+  for(let i=0;i<termMax&&b1>0.5;i++){
+    const int=mr?b1*mr:0; const pr=pmt-int;
+    if(pr<=0&&mr){m1=termMax;break;}
+    b1=Math.max(0,b1-pr); m1++;
+  }
+  if(b1>0.5) m1=termMax; // не погашен за срок — берём срок
+  // С досрочными
+  let b2=bal,m2=0;
+  for(let i=0;i<termMax&&b2>0.5;i++){
+    const int=mr?b2*mr:0; const pr=pmt+extra-int;
+    b2=Math.max(0,b2-pr); m2++;
+  }
+  if(b2>0.5) m2=termMax;
+  const tw=m1*pmt, twEx=extra>0?m2*(pmt+extra):tw;
   return {totalWithout:Math.round(tw),totalWith:Math.round(twEx),savingsTotal:Math.max(0,Math.round((tw-bal)-(twEx-bal))),monthsWithout:m1,monthsWith:m2,overPayWithout:Math.round(tw-bal),overPayWith:Math.round(twEx-bal),monthsSaved:Math.max(0,m1-m2)};
 }
 
