@@ -330,17 +330,25 @@ function setSyncStatus(state, label) {
 }
 
 async function loadFromGitHub() {
-  if (!ghToken) { setSyncStatus('','не настроено'); return; }
   setSyncStatus('saving', 'загрузка...');
   try {
-    const r = await fetch(`https://api.github.com/repos/${REPO_OWNER}/${REPO_DATA}/contents/${DATA_FILE}`, {
-      headers: { 'Authorization': `token ${ghToken}`, 'Accept': 'application/vnd.github.v3+json' }
-    });
-    if (r.status === 404) { setSyncStatus('ok','новый файл'); return; }
-    if (!r.ok) throw new Error(r.statusText);
-    const d = await r.json();
-    dataSha = d.sha;
-    const raw = atob(d.content.replace(/\n/g,''));
+    // Читаем публично из pdoronin/finance — без токена
+    const r = await fetch(`https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_OWNER}/finance/main/data.json?_=${Date.now()}`);
+    // Пробуем оба пути
+    let raw;
+    if (r.ok) {
+      raw = await r.text();
+    } else {
+      // Альтернативный путь через API (для чтения токен не нужен для публичного репо)
+      const r2 = await fetch(`https://api.github.com/repos/${REPO_OWNER}/finance/contents/${DATA_FILE}`, {
+        headers: ghToken ? { 'Authorization': `token ${ghToken}`, 'Accept': 'application/vnd.github.v3+json' } : { 'Accept': 'application/vnd.github.v3+json' }
+      });
+      if (r2.status === 404) { setSyncStatus('ok','пустой файл'); return; }
+      if (!r2.ok) throw new Error(r2.statusText);
+      const d = await r2.json();
+      dataSha = d.sha;
+      raw = atob(d.content.replace(/\n/g,''));
+    }
     const loaded = JSON.parse(raw);
     state = { cashflow: {}, loans: [], ...loaded };
     rebuildUI();
@@ -352,13 +360,20 @@ async function loadFromGitHub() {
 }
 
 async function saveToGitHub() {
-  if (!ghToken) return;
+  if (!ghToken) { setSyncStatus('', 'нет токена — только просмотр'); return; }
   setSyncStatus('saving', 'сохранение...');
   try {
+    // Получаем актуальный SHA если не знаем
+    if (!dataSha) {
+      const rsha = await fetch(`https://api.github.com/repos/${REPO_OWNER}/finance/contents/${DATA_FILE}`, {
+        headers: { 'Authorization': `token ${ghToken}`, 'Accept': 'application/vnd.github.v3+json' }
+      });
+      if (rsha.ok) { const ds = await rsha.json(); dataSha = ds.sha; }
+    }
     const content = btoa(unescape(encodeURIComponent(JSON.stringify(state, null, 2))));
     const body = { message: 'Update finance data', content };
     if (dataSha) body.sha = dataSha;
-    const r = await fetch(`https://api.github.com/repos/${REPO_OWNER}/${REPO_DATA}/contents/${DATA_FILE}`, {
+    const r = await fetch(`https://api.github.com/repos/${REPO_OWNER}/finance/contents/${DATA_FILE}`, {
       method: 'PUT',
       headers: { 'Authorization': `token ${ghToken}`, 'Content-Type': 'application/json', 'Accept': 'application/vnd.github.v3+json' },
       body: JSON.stringify(body)
@@ -410,8 +425,8 @@ function rebuildUI() {
 
 document.getElementById('footer-time').textContent = new Date().toLocaleString('ru-RU');
 rebuildUI();
-if (ghToken) loadFromGitHub();
-else setTimeout(() => showSetup(), 500);
+// Всегда загружаем данные (публичное чтение); setup только если нужно редактировать
+loadFromGitHub();
 </script>
 </body>
 </html>
