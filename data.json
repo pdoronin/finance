@@ -18,24 +18,6 @@
       "payment": 0,
       "term": 0,
       "extraPayment": 0
-    },
-    {
-      "id": 1003,
-      "name": "Кредит 3",
-      "balance": 0,
-      "rate": 0,
-      "payment": 0,
-      "term": 0,
-      "extraPayment": 0
-    },
-    {
-      "id": 1004,
-      "name": "Кредит 4",
-      "balance": 0,
-      "rate": 0,
-      "payment": 0,
-      "term": 0,
-      "extraPayment": 0
     }
   ]
 }
