@@ -56,9 +56,10 @@
   .table-wrap { overflow-x: auto; }
   table { width: 100%; border-collapse: collapse; }
   thead th { background: var(--surface2); color: var(--muted); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; padding: 10px 14px; text-align: right; white-space: nowrap; border-bottom: 1px solid var(--border); }
-  thead th:first-child { text-align: left; min-width: 160px; position: sticky; left: 0; background: var(--surface2); z-index: 10; }
+  thead th:first-child { text-align: left; min-width: 140px; max-width: 140px; position: sticky; left: 0; background: var(--surface2); z-index: 20; box-shadow: 2px 0 6px rgba(0,0,0,.4); }
   tbody td { padding: 0; border-bottom: 1px solid var(--border); border-right: 1px solid var(--border); text-align: right; }
-  tbody td:first-child { text-align: left; position: sticky; left: 0; background: var(--surface); z-index: 5; font-weight: 500; padding: 0 14px; }
+  tbody td:first-child { text-align: left; position: sticky; left: 0; background: var(--surface); z-index: 15; font-weight: 500; padding: 0 14px; box-shadow: 2px 0 6px rgba(0,0,0,.4); }
+  .total-row td:first-child { background: rgba(15,17,23,.98) !important; }
   .row-label { padding: 11px 0; display: flex; align-items: center; gap: 8px; }
   tbody tr:last-child td { border-bottom: none; }
   .cell-input { width: 100%; background: transparent; border: none; outline: none; color: var(--text); font-size: 14px; font-family: inherit; text-align: right; padding: 11px 14px; cursor: text; transition: background .15s; }
