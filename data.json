@@ -36,15 +36,6 @@
       "payment": 0,
       "term": 0,
       "extraPayment": 0
-    },
-    {
-      "id": 1005,
-      "name": "Кредит 5",
-      "balance": 0,
-      "rate": 0,
-      "payment": 0,
-      "term": 0,
-      "extraPayment": 0
     }
   ]
 }
