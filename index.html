@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>💰 Финансы — Павел Доронин</title>
+<style>
+  :root {
+    --bg: #0f1117;
+    --surface: #1a1d26;
+    --surface2: #22253a;
+    --border: #2a2d40;
+    --accent: #4f8ef7;
+    --green: #34d399;
+    --red: #f87171;
+    --yellow: #fbbf24;
+    --text: #e2e8f0;
+    --muted: #64748b;
+    --radius: 12px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 14px;
+    line-height: 1.5;
+  }
+  .header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .header h1 { font-size: 20px; font-weight: 700; }
+  .header .sub { color: var(--muted); font-size: 13px; }
+  .badge {
+    background: var(--accent);
+    color: white;
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-weight: 600;
+  }
+  .container { padding: 24px; max-width: 100%; }
+  .section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    margin-bottom: 24px;
+    overflow: hidden;
+  }
+  .section-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .section-title { font-size: 16px; font-weight: 600; }
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; }
+  thead th {
+    background: var(--surface2);
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 10px 14px;
+    text-align: right;
+    white-space: nowrap;
+    position: sticky;
+    top: 57px;
+    border-bottom: 1px solid var(--border);
+  }
+  thead th:first-child { text-align: left; min-width: 160px; position: sticky; left: 0; background: var(--surface2); z-index: 10; }
+  tbody td {
+    padding: 0;
+    border-bottom: 1px solid var(--border);
+    border-right: 1px solid var(--border);
+    text-align: right;
+    vertical-align: middle;
+  }
+  tbody td:first-child {
+    text-align: left;
+    position: sticky;
+    left: 0;
+    background: var(--surface);
+    z-index: 5;
+    font-weight: 500;
+    color: var(--text);
+    padding: 0 14px;
+  }
+  .row-label {
+    padding: 11px 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .row-icon { font-size: 16px; }
+  tbody tr:last-child td { border-bottom: none; }
+  .cell-input {
+    width: 100%;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--text);
+    font-size: 14px;
+    font-family: inherit;
+    text-align: right;
+    padding: 11px 14px;
+    cursor: text;
+    transition: background 0.15s;
+  }
+  .cell-input:hover { background: rgba(79,142,247,0.06); }
+  .cell-input:focus { background: rgba(79,142,247,0.12); color: white; }
+  .cell-readonly {
+    padding: 11px 14px;
+    display: inline-block;
+    width: 100%;
+  }
+  .positive { color: var(--green); }
+  .negative { color: var(--red); }
+  .neutral { color: var(--muted); }
+  .total-row td { background: rgba(79,142,247,0.05); }
+  .total-row td:first-child { background: rgba(79,142,247,0.08); }
+  .year-col { background: rgba(251,191,36,0.05) !important; }
+  .year-col:first-child { background: rgba(251,191,36,0.08) !important; }
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1px solid;
+    transition: all 0.15s;
+    background: transparent;
+  }
+  .btn-primary {
+    color: var(--accent);
+    border-color: var(--accent);
+  }
+  .btn-primary:hover { background: rgba(79,142,247,0.1); }
+  .btn-danger {
+    color: var(--red);
+    border-color: var(--red);
+    padding: 4px 10px;
+    font-size: 12px;
+  }
+  .btn-danger:hover { background: rgba(248,113,113,0.1); }
+  .loan-card {
+    border-bottom: 1px solid var(--border);
+    padding: 0;
+  }
+  .loan-card:last-child { border-bottom: none; }
+  .loan-header {
+    padding: 14px 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--surface2);
+    cursor: pointer;
+    user-select: none;
+  }
+  .loan-name-input {
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--text);
+    font-size: 15px;
+    font-weight: 600;
+    font-family: inherit;
+    flex: 1;
+  }
+  .loan-name-input::placeholder { color: var(--muted); }
+  .loan-body { padding: 0 20px 16px; }
+  .loan-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 12px;
+    margin-top: 16px;
+  }
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .field label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--muted);
+  }
+  .field input {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 9px 12px;
+    color: var(--text);
+    font-size: 14px;
+    font-family: inherit;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  .field input:focus { border-color: var(--accent); }
+  .loan-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 12px;
+    margin-top: 12px;
+    padding: 14px;
+    background: var(--bg);
+    border-radius: 8px;
+    border: 1px solid var(--border);
+  }
+  .stat { display: flex; flex-direction: column; gap: 3px; }
+  .stat-label { font-size: 11px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+  .stat-value { font-size: 17px; font-weight: 700; }
+  .stat-sub { font-size: 11px; color: var(--muted); }
+  .savings-banner {
+    margin-top: 10px;
+    padding: 10px 14px;
+    border-radius: 8px;
+    background: rgba(52,211,153,0.08);
+    border: 1px solid rgba(52,211,153,0.2);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+  }
+  .savings-icon { font-size: 18px; }
+  .hint { color: var(--muted); font-size: 12px; padding: 12px 20px; }
+  .month-header-row th { 
+    font-size: 11px;
+    padding: 8px 14px;
+  }
+  .today-col { 
+    background: rgba(79,142,247,0.08) !important;
+  }
+  .footer {
+    text-align: center;
+    padding: 20px;
+    color: var(--muted);
+    font-size: 12px;
+  }
+  @media (max-width: 600px) {
+    .container { padding: 12px; }
+    .loan-grid { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="header">
+  <div>
+    <h1>💰 Финансы</h1>
+  </div>
+  <span class="badge">Live</span>
+  <span class="sub" id="last-saved"></span>
+</div>
+
+<div class="container">
+
+  <!-- CASH FLOW SECTION -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-title">📊 Денежный поток</span>
+      <span class="hint" style="padding:0">Нажмите на ячейку чтобы изменить</span>
+    </div>
+    <div class="table-wrap">
+      <table id="cashflow-table">
+        <thead>
+          <tr id="month-header-row">
+            <th>Статья</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr id="income-row">
+            <td><div class="row-label"><span class="row-icon">📈</span> Доход</div></td>
+          </tr>
+          <tr id="expense-row">
+            <td><div class="row-label"><span class="row-icon">📉</span> Расходы</div></td>
+          </tr>
+          <tr class="total-row" id="balance-row">
+            <td><div class="row-label"><span class="row-icon">⚖️</span> Баланс</div></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- LOANS SECTION -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-title">🏦 Кредиты</span>
+      <button class="btn btn-primary" onclick="addLoan()">+ Добавить кредит</button>
+    </div>
+    <div id="loans-container"></div>
+    <div class="hint" id="loans-hint">Добавьте кредиты с помощью кнопки выше</div>
+  </div>
+
+</div>
+
+<div class="footer">Данные хранятся в браузере · Обновлено: <span id="footer-time">—</span></div>
+
+<script>
+// ─── State ───────────────────────────────────────────────────────────────────
+const MONTHS_COUNT = 12; // monthly
+const YEARS_AFTER = 3;   // yearly summaries after 12 months
+
+let state = {
+  cashflow: {}, // { "2026-04": { income: 0, expenses: 0 }, ... }
+  loans: []     // [{ id, name, balance, rate, payment, term, extraPayment }]
+};
+
+// ─── Months generation ────────────────────────────────────────────────────────
+function generateColumns() {
+  const cols = [];
+  const now = new Date();
+  let year = now.getFullYear();
+  let month = now.getMonth(); // 0-indexed
+
+  // 12 monthly columns
+  for (let i = 0; i < MONTHS_COUNT; i++) {
+    const m = month + i;
+    const y = year + Math.floor(m / 12);
+    const mo = m % 12;
+    cols.push({
+      key: `${y}-${String(mo+1).padStart(2,'0')}`,
+      label: formatMonth(y, mo),
+      type: 'month',
+      isFirst: i === 0
+    });
+  }
+
+  // Yearly summaries
+  const nextYear = year + 1;
+  for (let i = 0; i < YEARS_AFTER; i++) {
+    const y = nextYear + i;
+    cols.push({ key: `year-${y}`, label: `${y}`, type: 'year' });
+  }
+
+  return cols;
+}
+
+function formatMonth(year, month) {
+  const names = ['Янв','Фев','Мар','Апр','Май','Июн','Июл','Авг','Сен','Окт','Ноя','Дек'];
+  return `${names[month]} ${year}`;
+}
+
+const COLUMNS = generateColumns();
+
+// ─── Table rendering ──────────────────────────────────────────────────────────
+function buildCashflowTable() {
+  const headerRow = document.getElementById('month-header-row');
+  const incomeRow = document.getElementById('income-row');
+  const expenseRow = document.getElementById('expense-row');
+  const balanceRow = document.getElementById('balance-row');
+
+  // Clear existing dynamic cells
+  while (headerRow.children.length > 1) headerRow.removeChild(headerRow.lastChild);
+  while (incomeRow.children.length > 1) incomeRow.removeChild(incomeRow.lastChild);
+  while (expenseRow.children.length > 1) expenseRow.removeChild(expenseRow.lastChild);
+  while (balanceRow.children.length > 1) balanceRow.removeChild(balanceRow.lastChild);
+
+  COLUMNS.forEach((col, i) => {
+    const isYear = col.type === 'year';
+    const isFirst = col.isFirst;
+
+    // Header
+    const th = document.createElement('th');
+    th.textContent = col.label;
+    if (isYear) th.style.background = 'rgba(251,191,36,0.1)';
+    if (isFirst) th.style.color = 'var(--accent)';
+    headerRow.appendChild(th);
+
+    // Income cell
+    incomeRow.appendChild(makeEditCell(col.key, 'income', isYear, isFirst));
+    // Expense cell
+    expenseRow.appendChild(makeEditCell(col.key, 'expenses', isYear, isFirst));
+    // Balance cell (readonly)
+    balanceRow.appendChild(makeBalanceCell(col.key, isYear, isFirst));
+  });
+
+  updateAllBalances();
+}
+
+function makeEditCell(colKey, field, isYear, isFirst) {
+  const td = document.createElement('td');
+  if (isYear) td.classList.add('year-col');
+
+  if (isYear) {
+    // Year = sum of 12 months of that year
+    const span = document.createElement('span');
+    span.className = 'cell-readonly';
+    span.id = `cell-${colKey}-${field}`;
+    td.appendChild(span);
+  } else {
+    const input = document.createElement('input');
+    input.type = 'number';
+    input.className = 'cell-input';
+    input.placeholder = '0';
+    input.step = '1000';
+    input.id = `cell-${colKey}-${field}`;
+    const val = (state.cashflow[colKey] || {})[field] || '';
+    input.value = val ? val : '';
+    input.addEventListener('input', () => {
+      if (!state.cashflow[colKey]) state.cashflow[colKey] = {};
+      state.cashflow[colKey][field] = parseFloat(input.value) || 0;
+      updateAllBalances();
+      saveState();
+    });
+    td.appendChild(input);
+  }
+  return td;
+}
+
+function makeBalanceCell(colKey, isYear, isFirst) {
+  const td = document.createElement('td');
+  if (isYear) td.classList.add('year-col');
+  const span = document.createElement('span');
+  span.className = 'cell-readonly';
+  span.id = `balance-${colKey}`;
+  td.appendChild(span);
+  return td;
+}
+
+function updateAllBalances() {
+  // Update monthly balances
+  COLUMNS.forEach(col => {
+    if (col.type === 'month') {
+      const cf = state.cashflow[col.key] || {};
+      const income = cf.income || 0;
+      const expenses = cf.expenses || 0;
+      const balance = income - expenses;
+      const el = document.getElementById(`balance-${col.key}`);
+      if (el) {
+        el.textContent = fmt(balance);
+        el.className = 'cell-readonly ' + (balance > 0 ? 'positive' : balance < 0 ? 'negative' : 'neutral');
+      }
+    } else {
+      // Year: sum months of that year
+      const yearNum = parseInt(col.key.replace('year-', ''));
+      let income = 0, expenses = 0;
+      COLUMNS.filter(c => c.type === 'month' && c.key.startsWith(String(yearNum))).forEach(mc => {
+        const cf = state.cashflow[mc.key] || {};
+        income += cf.income || 0;
+        expenses += cf.expenses || 0;
+      });
+      const balance = income - expenses;
+
+      const incEl = document.getElementById(`cell-${col.key}-income`);
+      const expEl = document.getElementById(`cell-${col.key}-expenses`);
+      const balEl = document.getElementById(`balance-${col.key}`);
+
+      if (incEl) incEl.textContent = fmt(income);
+      if (expEl) expEl.textContent = fmt(expenses);
+      if (balEl) {
+        balEl.textContent = fmt(balance);
+        balEl.className = 'cell-readonly ' + (balance > 0 ? 'positive' : balance < 0 ? 'negative' : 'neutral');
+      }
+    }
+  });
+}
+
+// ─── Loans ────────────────────────────────────────────────────────────────────
+function addLoan(data) {
+  const loan = data || {
+    id: Date.now(),
+    name: `Кредит ${state.loans.length + 1}`,
+    balance: 0,
+    rate: 0,
+    payment: 0,
+    term: 0,
+    extraPayment: 0
+  };
+  state.loans.push(loan);
+  renderLoans();
+  saveState();
+}
+
+function removeLoan(id) {
+  state.loans = state.loans.filter(l => l.id !== id);
+  renderLoans();
+  saveState();
+}
+
+function renderLoans() {
+  const container = document.getElementById('loans-container');
+  const hint = document.getElementById('loans-hint');
+  container.innerHTML = '';
+  hint.style.display = state.loans.length ? 'none' : 'block';
+
+  state.loans.forEach(loan => {
+    const div = document.createElement('div');
+    div.className = 'loan-card';
+    div.innerHTML = buildLoanHTML(loan);
+    container.appendChild(div);
+    attachLoanEvents(div, loan);
+  });
+}
+
+function buildLoanHTML(loan) {
+  const stats = calcLoanStats(loan);
+  const hasSavings = stats.savingsTotal > 0;
+
+  return `
+    <div class="loan-header">
+      <span style="font-size:20px">🏦</span>
+      <input class="loan-name-input" value="${escHtml(loan.name)}" placeholder="Название кредита" data-field="name">
+      <button class="btn btn-danger" onclick="removeLoan(${loan.id})">✕ Удалить</button>
+    </div>
+    <div class="loan-body">
+      <div class="loan-grid">
+        <div class="field">
+          <label>💰 Остаток тела (₽)</label>
+          <input type="number" step="1000" value="${loan.balance || ''}" placeholder="0" data-field="balance" data-id="${loan.id}">
+        </div>
+        <div class="field">
+          <label>📊 Ставка годовая (%)</label>
+          <input type="number" step="0.1" value="${loan.rate || ''}" placeholder="0.0" data-field="rate" data-id="${loan.id}">
+        </div>
+        <div class="field">
+          <label>📅 Ежемесячный платёж (₽)</label>
+          <input type="number" step="500" value="${loan.payment || ''}" placeholder="0" data-field="payment" data-id="${loan.id}">
+        </div>
+        <div class="field">
+          <label>⏳ Оставшийся срок (мес.)</label>
+          <input type="number" step="1" value="${loan.term || ''}" placeholder="0" data-field="term" data-id="${loan.id}">
+        </div>
+        <div class="field" style="border-left: 2px solid var(--yellow); padding-left: 10px;">
+          <label>⚡ Досрочное погашение/мес (₽)</label>
+          <input type="number" step="1000" value="${loan.extraPayment || ''}" placeholder="0" data-field="extraPayment" data-id="${loan.id}">
+        </div>
+      </div>
+
+      <div class="loan-stats" id="stats-${loan.id}">
+        ${renderStats(stats, loan)}
+      </div>
+    </div>
+  `;
+}
+
+function renderStats(stats, loan) {
+  if (!loan.balance && !loan.payment) return '<span style="color:var(--muted);font-size:13px">Введите данные кредита для расчёта</span>';
+
+  const hasSavings = stats.savingsTotal > 0 && loan.extraPayment > 0;
+  return `
+    <div class="stat">
+      <span class="stat-label">Итого выплат (без досрочных)</span>
+      <span class="stat-value">${fmt(stats.totalWithout)}</span>
+      <span class="stat-sub">за ${stats.monthsWithout} мес · переплата ${fmt(stats.overPayWithout)}</span>
+    </div>
+    <div class="stat">
+      <span class="stat-label">Итого с досрочными (+${fmt(loan.extraPayment)}/мес)</span>
+      <span class="stat-value ${hasSavings ? 'positive' : ''}">${fmt(stats.totalWith)}</span>
+      <span class="stat-sub">за ${stats.monthsWith} мес · переплата ${fmt(stats.overPayWith)}</span>
+    </div>
+    <div class="stat">
+      <span class="stat-label">💚 Экономия на процентах</span>
+      <span class="stat-value positive">${fmt(stats.savingsTotal)}</span>
+      <span class="stat-sub">-${stats.monthsSaved} мес · ${fmt(stats.monthlySave)}/мес в среднем</span>
+    </div>
+  `;
+}
+
+function calcLoanStats(loan) {
+  const balance = parseFloat(loan.balance) || 0;
+  const annualRate = parseFloat(loan.rate) || 0;
+  const payment = parseFloat(loan.payment) || 0;
+  const extraPayment = parseFloat(loan.extraPayment) || 0;
+  const term = parseInt(loan.term) || 0;
+
+  if (!balance || !payment) return { totalWithout: 0, totalWith: 0, savingsTotal: 0, monthsWithout: 0, monthsWith: 0, overPayWithout: 0, overPayWith: 0, monthlySave: 0, monthsSaved: 0 };
+
+  const monthlyRate = annualRate / 100 / 12;
+
+  // Without extra payment
+  let bal1 = balance, months1 = 0, paid1 = 0;
+  for (let i = 0; i < 600 && bal1 > 0; i++) {
+    const interest = monthlyRate > 0 ? bal1 * monthlyRate : 0;
+    const principal = Math.min(payment - interest, bal1);
+    if (principal <= 0 && monthlyRate > 0) { months1 = 999; break; }
+    bal1 -= principal;
+    if (bal1 < 0) bal1 = 0;
+    paid1 += Math.min(payment, payment - interest + interest);
+    months1++;
+    if (bal1 <= 0) break;
+  }
+  if (months1 === 0 && term > 0) months1 = term;
+  const totalWithout = months1 * payment;
+  const overPayWithout = totalWithout - balance;
+
+  // With extra payment
+  let bal2 = balance, months2 = 0, paid2 = 0;
+  for (let i = 0; i < 600 && bal2 > 0; i++) {
+    const interest = monthlyRate > 0 ? bal2 * monthlyRate : 0;
+    const principal = payment - interest + extraPayment;
+    const actualPrincipal = Math.min(principal, bal2);
+    bal2 -= Math.max(0, actualPrincipal);
+    if (bal2 < 0) bal2 = 0;
+    paid2 += Math.min(payment + extraPayment, payment + extraPayment - Math.max(0, actualPrincipal - (payment + extraPayment - interest)));
+    months2++;
+    if (bal2 <= 0) break;
+  }
+  const totalWith = months2 * (payment + extraPayment);
+  const overPayWith = totalWith - balance;
+  const savingsTotal = Math.max(0, overPayWithout - overPayWith);
+  const monthsSaved = Math.max(0, months1 - months2);
+
+  return {
+    totalWithout: Math.round(totalWithout),
+    totalWith: Math.round(totalWith),
+    savingsTotal: Math.round(savingsTotal),
+    monthsWithout: months1,
+    monthsWith: months2,
+    overPayWithout: Math.round(overPayWithout),
+    overPayWith: Math.round(overPayWith),
+    monthlySave: months2 > 0 ? Math.round(savingsTotal / months2) : 0,
+    monthsSaved
+  };
+}
+
+function attachLoanEvents(container, loan) {
+  container.querySelectorAll('input[data-field]').forEach(input => {
+    const field = input.dataset.field;
+    input.addEventListener('input', () => {
+      const idx = state.loans.findIndex(l => l.id === loan.id);
+      if (idx === -1) return;
+      if (field === 'name') {
+        state.loans[idx].name = input.value;
+      } else {
+        state.loans[idx][field] = parseFloat(input.value) || 0;
+      }
+      // Refresh stats only
+      const statsEl = container.querySelector(`#stats-${loan.id}`);
+      if (statsEl) statsEl.innerHTML = renderStats(calcLoanStats(state.loans[idx]), state.loans[idx]);
+      saveState();
+    });
+  });
+}
+
+// ─── Utils ────────────────────────────────────────────────────────────────────
+function fmt(n) {
+  if (!n && n !== 0) return '—';
+  return new Intl.NumberFormat('ru-RU', { style: 'currency', currency: 'RUB', maximumFractionDigits: 0 }).format(n);
+}
+
+function escHtml(s) {
+  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ─── Storage ──────────────────────────────────────────────────────────────────
+function saveState() {
+  try {
+    localStorage.setItem('finance_v1', JSON.stringify(state));
+    const now = new Date();
+    const t = now.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+    document.getElementById('last-saved').textContent = `сохранено в ${t}`;
+    document.getElementById('footer-time').textContent = now.toLocaleString('ru-RU');
+  } catch(e) {}
+}
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem('finance_v1');
+    if (raw) {
+      const saved = JSON.parse(raw);
+      state = { cashflow: {}, loans: [], ...saved };
+    }
+  } catch(e) {}
+}
+
+// ─── Init ─────────────────────────────────────────────────────────────────────
+function init() {
+  loadState();
+  buildCashflowTable();
+
+  if (state.loans.length === 0) {
+    // Add 5 default empty loans
+    for (let i = 1; i <= 5; i++) {
+      state.loans.push({ id: Date.now() + i, name: `Кредит ${i}`, balance: 0, rate: 0, payment: 0, term: 0, extraPayment: 0 });
+    }
+  }
+  renderLoans();
+
+  document.getElementById('footer-time').textContent = new Date().toLocaleString('ru-RU');
+}
+
+init();
+</script>
+</body>
+</html>
