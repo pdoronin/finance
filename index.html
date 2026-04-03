@@ -19,685 +19,399 @@
     --radius: 12px;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    font-size: 14px;
-    line-height: 1.5;
-  }
-  .header {
-    background: var(--surface);
-    border-bottom: 1px solid var(--border);
-    padding: 16px 24px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    position: sticky;
-    top: 0;
-    z-index: 100;
-  }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--text); font-size: 14px; line-height: 1.5; }
+  .header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 14px 24px; display: flex; align-items: center; gap: 12px; position: sticky; top: 0; z-index: 100; }
   .header h1 { font-size: 20px; font-weight: 700; }
-  .header .sub { color: var(--muted); font-size: 13px; }
-  .badge {
-    background: var(--accent);
-    color: white;
-    font-size: 11px;
-    padding: 2px 8px;
-    border-radius: 20px;
-    font-weight: 600;
-  }
-  .container { padding: 24px; max-width: 100%; }
-  .section {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    margin-bottom: 24px;
-    overflow: hidden;
-  }
-  .section-header {
-    padding: 16px 20px;
-    border-bottom: 1px solid var(--border);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-  }
+  .sync-status { margin-left: auto; font-size: 12px; display: flex; align-items: center; gap: 6px; color: var(--muted); }
+  .sync-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); flex-shrink: 0; }
+  .sync-dot.ok { background: var(--green); }
+  .sync-dot.saving { background: var(--yellow); animation: pulse 1s infinite; }
+  .sync-dot.error { background: var(--red); }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+
+  /* Setup modal */
+  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.7); z-index: 200; display: flex; align-items: center; justify-content: center; }
+  .modal { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 28px; width: min(480px,94vw); }
+  .modal h2 { font-size: 18px; margin-bottom: 8px; }
+  .modal p { color: var(--muted); font-size: 13px; margin-bottom: 20px; line-height: 1.6; }
+  .modal label { display: block; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; color: var(--muted); margin-bottom: 6px; }
+  .modal input { width: 100%; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; color: var(--text); font-size: 14px; font-family: inherit; outline: none; margin-bottom: 16px; }
+  .modal input:focus { border-color: var(--accent); }
+  .modal .btn-row { display: flex; gap: 10px; }
+  .btn { display: inline-flex; align-items: center; gap: 6px; padding: 10px 18px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; border: 1px solid; transition: all .15s; background: transparent; }
+  .btn-primary { color: white; background: var(--accent); border-color: var(--accent); }
+  .btn-primary:hover { opacity: .9; }
+  .btn-outline { color: var(--accent); border-color: var(--accent); }
+  .btn-outline:hover { background: rgba(79,142,247,.1); }
+  .btn-danger { color: var(--red); border-color: var(--red); padding: 4px 10px; font-size: 12px; }
+  .btn-danger:hover { background: rgba(248,113,113,.1); }
+  .btn-sm { padding: 6px 12px; font-size: 12px; }
+
+  .container { padding: 24px; }
+  .section { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 24px; overflow: hidden; }
+  .section-header { padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
   .section-title { font-size: 16px; font-weight: 600; }
+
+  /* Table */
   .table-wrap { overflow-x: auto; }
   table { width: 100%; border-collapse: collapse; }
-  thead th {
-    background: var(--surface2);
-    color: var(--muted);
-    font-size: 12px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    padding: 10px 14px;
-    text-align: right;
-    white-space: nowrap;
-    position: sticky;
-    top: 57px;
-    border-bottom: 1px solid var(--border);
-  }
+  thead th { background: var(--surface2); color: var(--muted); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; padding: 10px 14px; text-align: right; white-space: nowrap; border-bottom: 1px solid var(--border); }
   thead th:first-child { text-align: left; min-width: 160px; position: sticky; left: 0; background: var(--surface2); z-index: 10; }
-  tbody td {
-    padding: 0;
-    border-bottom: 1px solid var(--border);
-    border-right: 1px solid var(--border);
-    text-align: right;
-    vertical-align: middle;
-  }
-  tbody td:first-child {
-    text-align: left;
-    position: sticky;
-    left: 0;
-    background: var(--surface);
-    z-index: 5;
-    font-weight: 500;
-    color: var(--text);
-    padding: 0 14px;
-  }
-  .row-label {
-    padding: 11px 0;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  .row-icon { font-size: 16px; }
+  tbody td { padding: 0; border-bottom: 1px solid var(--border); border-right: 1px solid var(--border); text-align: right; }
+  tbody td:first-child { text-align: left; position: sticky; left: 0; background: var(--surface); z-index: 5; font-weight: 500; padding: 0 14px; }
+  .row-label { padding: 11px 0; display: flex; align-items: center; gap: 8px; }
   tbody tr:last-child td { border-bottom: none; }
-  .cell-input {
-    width: 100%;
-    background: transparent;
-    border: none;
-    outline: none;
-    color: var(--text);
-    font-size: 14px;
-    font-family: inherit;
-    text-align: right;
-    padding: 11px 14px;
-    cursor: text;
-    transition: background 0.15s;
-  }
-  .cell-input:hover { background: rgba(79,142,247,0.06); }
-  .cell-input:focus { background: rgba(79,142,247,0.12); color: white; }
-  .cell-readonly {
-    padding: 11px 14px;
-    display: inline-block;
-    width: 100%;
-  }
+  .cell-input { width: 100%; background: transparent; border: none; outline: none; color: var(--text); font-size: 14px; font-family: inherit; text-align: right; padding: 11px 14px; cursor: text; transition: background .15s; }
+  .cell-input:hover { background: rgba(79,142,247,.06); }
+  .cell-input:focus { background: rgba(79,142,247,.12); color: white; }
+  .cell-readonly { padding: 11px 14px; display: inline-block; width: 100%; }
   .positive { color: var(--green); }
   .negative { color: var(--red); }
   .neutral { color: var(--muted); }
-  .total-row td { background: rgba(79,142,247,0.05); }
-  .total-row td:first-child { background: rgba(79,142,247,0.08); }
-  .year-col { background: rgba(251,191,36,0.05) !important; }
-  .year-col:first-child { background: rgba(251,191,36,0.08) !important; }
-  .btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 8px 16px;
-    border-radius: 8px;
-    font-size: 13px;
-    font-weight: 600;
-    cursor: pointer;
-    border: 1px solid;
-    transition: all 0.15s;
-    background: transparent;
-  }
-  .btn-primary {
-    color: var(--accent);
-    border-color: var(--accent);
-  }
-  .btn-primary:hover { background: rgba(79,142,247,0.1); }
-  .btn-danger {
-    color: var(--red);
-    border-color: var(--red);
-    padding: 4px 10px;
-    font-size: 12px;
-  }
-  .btn-danger:hover { background: rgba(248,113,113,0.1); }
-  .loan-card {
-    border-bottom: 1px solid var(--border);
-    padding: 0;
-  }
+  .total-row td { background: rgba(79,142,247,.05); }
+  .total-row td:first-child { background: rgba(79,142,247,.08); }
+  .year-col { background: rgba(251,191,36,.05) !important; }
+
+  /* Loans */
+  .loan-card { border-bottom: 1px solid var(--border); }
   .loan-card:last-child { border-bottom: none; }
-  .loan-header {
-    padding: 14px 20px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    background: var(--surface2);
-    cursor: pointer;
-    user-select: none;
-  }
-  .loan-name-input {
-    background: transparent;
-    border: none;
-    outline: none;
-    color: var(--text);
-    font-size: 15px;
-    font-weight: 600;
-    font-family: inherit;
-    flex: 1;
-  }
+  .loan-header { padding: 14px 20px; display: flex; align-items: center; gap: 10px; background: var(--surface2); }
+  .loan-name-input { background: transparent; border: none; outline: none; color: var(--text); font-size: 15px; font-weight: 600; font-family: inherit; flex: 1; }
   .loan-name-input::placeholder { color: var(--muted); }
-  .loan-body { padding: 0 20px 16px; }
-  .loan-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 12px;
-    margin-top: 16px;
-  }
-  .field {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-  }
-  .field label {
-    font-size: 11px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    color: var(--muted);
-  }
-  .field input {
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 9px 12px;
-    color: var(--text);
-    font-size: 14px;
-    font-family: inherit;
-    outline: none;
-    transition: border-color 0.15s;
-  }
+  .loan-body { padding: 16px 20px; }
+  .loan-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 12px; margin-top: 0; }
+  .field { display: flex; flex-direction: column; gap: 4px; }
+  .field label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; color: var(--muted); }
+  .field input { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 9px 12px; color: var(--text); font-size: 14px; font-family: inherit; outline: none; transition: border-color .15s; }
   .field input:focus { border-color: var(--accent); }
-  .loan-stats {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 12px;
-    margin-top: 12px;
-    padding: 14px;
-    background: var(--bg);
-    border-radius: 8px;
-    border: 1px solid var(--border);
-  }
+  .loan-stats { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 12px; margin-top: 12px; padding: 14px; background: var(--bg); border-radius: 8px; border: 1px solid var(--border); }
   .stat { display: flex; flex-direction: column; gap: 3px; }
-  .stat-label { font-size: 11px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+  .stat-label { font-size: 11px; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: .5px; }
   .stat-value { font-size: 17px; font-weight: 700; }
   .stat-sub { font-size: 11px; color: var(--muted); }
-  .savings-banner {
-    margin-top: 10px;
-    padding: 10px 14px;
-    border-radius: 8px;
-    background: rgba(52,211,153,0.08);
-    border: 1px solid rgba(52,211,153,0.2);
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 13px;
-  }
-  .savings-icon { font-size: 18px; }
-  .hint { color: var(--muted); font-size: 12px; padding: 12px 20px; }
-  .month-header-row th { 
-    font-size: 11px;
-    padding: 8px 14px;
-  }
-  .today-col { 
-    background: rgba(79,142,247,0.08) !important;
-  }
-  .footer {
-    text-align: center;
-    padding: 20px;
-    color: var(--muted);
-    font-size: 12px;
-  }
-  @media (max-width: 600px) {
-    .container { padding: 12px; }
-    .loan-grid { grid-template-columns: 1fr 1fr; }
-  }
+  .hint { color: var(--muted); font-size: 12px; padding: 16px 20px; }
+  .footer { text-align: center; padding: 20px; color: var(--muted); font-size: 12px; }
+  .settings-link { color: var(--muted); font-size: 12px; cursor: pointer; text-decoration: underline; }
+  .settings-link:hover { color: var(--text); }
 </style>
 </head>
 <body>
-<div class="header">
-  <div>
-    <h1>💰 Финансы</h1>
+
+<!-- Setup Modal -->
+<div class="modal-overlay" id="setup-modal" style="display:none">
+  <div class="modal">
+    <h2>🔐 Настройка синхронизации</h2>
+    <p>Для сохранения данных на GitHub введи Personal Access Token. Данные будут храниться в приватном репозитории <strong>pdoronin/finance-data</strong> и доступны с любого устройства.</p>
+    <label>GitHub Token</label>
+    <input type="password" id="token-input" placeholder="ghp_..." autocomplete="off">
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="saveToken()">Сохранить</button>
+      <button class="btn btn-outline" onclick="closeModal()">Отмена</button>
+    </div>
+    <p id="token-error" style="color:var(--red);margin-top:12px;font-size:13px;display:none"></p>
   </div>
-  <span class="badge">Live</span>
-  <span class="sub" id="last-saved"></span>
+</div>
+
+<div class="header">
+  <div><h1>💰 Финансы</h1></div>
+  <div class="sync-status">
+    <div class="sync-dot" id="sync-dot"></div>
+    <span id="sync-label">не настроено</span>
+  </div>
+  <button class="btn btn-outline btn-sm" onclick="showSetup()" style="margin-left:8px">⚙️</button>
 </div>
 
 <div class="container">
-
-  <!-- CASH FLOW SECTION -->
   <div class="section">
     <div class="section-header">
       <span class="section-title">📊 Денежный поток</span>
-      <span class="hint" style="padding:0">Нажмите на ячейку чтобы изменить</span>
     </div>
     <div class="table-wrap">
       <table id="cashflow-table">
-        <thead>
-          <tr id="month-header-row">
-            <th>Статья</th>
-          </tr>
-        </thead>
+        <thead><tr id="month-header-row"><th>Статья</th></tr></thead>
         <tbody>
-          <tr id="income-row">
-            <td><div class="row-label"><span class="row-icon">📈</span> Доход</div></td>
-          </tr>
-          <tr id="expense-row">
-            <td><div class="row-label"><span class="row-icon">📉</span> Расходы</div></td>
-          </tr>
-          <tr class="total-row" id="balance-row">
-            <td><div class="row-label"><span class="row-icon">⚖️</span> Баланс</div></td>
-          </tr>
+          <tr id="income-row"><td><div class="row-label"><span>📈</span> Доход</div></td></tr>
+          <tr id="expense-row"><td><div class="row-label"><span>📉</span> Расходы</div></td></tr>
+          <tr class="total-row" id="balance-row"><td><div class="row-label"><span>⚖️</span> Баланс</div></td></tr>
         </tbody>
       </table>
     </div>
   </div>
 
-  <!-- LOANS SECTION -->
   <div class="section">
     <div class="section-header">
       <span class="section-title">🏦 Кредиты</span>
-      <button class="btn btn-primary" onclick="addLoan()">+ Добавить кредит</button>
+      <button class="btn btn-outline btn-sm" onclick="addLoan()">+ Добавить</button>
     </div>
     <div id="loans-container"></div>
-    <div class="hint" id="loans-hint">Добавьте кредиты с помощью кнопки выше</div>
+    <div class="hint" id="loans-hint">Нажмите «Добавить» чтобы добавить кредит</div>
   </div>
-
 </div>
 
-<div class="footer">Данные хранятся в браузере · Обновлено: <span id="footer-time">—</span></div>
+<div class="footer">
+  <span id="footer-time">—</span> ·
+  <span class="settings-link" onclick="showSetup()">настройки синхронизации</span>
+</div>
 
 <script>
+// ─── Config ──────────────────────────────────────────────────────────────────
+const REPO_OWNER = 'pdoronin';
+const REPO_DATA  = 'finance-data';
+const DATA_FILE  = 'data.json';
+const MONTHS_COUNT = 12;
+const YEARS_AFTER = 3;
+
 // ─── State ───────────────────────────────────────────────────────────────────
-const MONTHS_COUNT = 12; // monthly
-const YEARS_AFTER = 3;   // yearly summaries after 12 months
+let state = { cashflow: {}, loans: [] };
+let dataSha = null; // SHA для обновления файла на GitHub
+let saveTimer = null;
+let ghToken = localStorage.getItem('gh_token') || '';
 
-let state = {
-  cashflow: {}, // { "2026-04": { income: 0, expenses: 0 }, ... }
-  loans: []     // [{ id, name, balance, rate, payment, term, extraPayment }]
-};
-
-// ─── Months generation ────────────────────────────────────────────────────────
+// ─── Columns ─────────────────────────────────────────────────────────────────
 function generateColumns() {
   const cols = [];
   const now = new Date();
-  let year = now.getFullYear();
-  let month = now.getMonth(); // 0-indexed
-
-  // 12 monthly columns
+  let year = now.getFullYear(), month = now.getMonth();
   for (let i = 0; i < MONTHS_COUNT; i++) {
-    const m = month + i;
-    const y = year + Math.floor(m / 12);
-    const mo = m % 12;
-    cols.push({
-      key: `${y}-${String(mo+1).padStart(2,'0')}`,
-      label: formatMonth(y, mo),
-      type: 'month',
-      isFirst: i === 0
-    });
+    const m = month + i, y = year + Math.floor(m / 12), mo = m % 12;
+    cols.push({ key: `${y}-${String(mo+1).padStart(2,'0')}`, label: formatMonth(y, mo), type: 'month', isFirst: i===0 });
   }
-
-  // Yearly summaries
-  const nextYear = year + 1;
   for (let i = 0; i < YEARS_AFTER; i++) {
-    const y = nextYear + i;
-    cols.push({ key: `year-${y}`, label: `${y}`, type: 'year' });
+    const y = year + 1 + i;
+    cols.push({ key: `year-${y}`, label: String(y), type: 'year' });
   }
-
   return cols;
 }
-
-function formatMonth(year, month) {
-  const names = ['Янв','Фев','Мар','Апр','Май','Июн','Июл','Авг','Сен','Окт','Ноя','Дек'];
-  return `${names[month]} ${year}`;
+const COLUMNS = generateColumns();
+function formatMonth(y, m) {
+  return ['Янв','Фев','Мар','Апр','Май','Июн','Июл','Авг','Сен','Окт','Ноя','Дек'][m] + ' ' + y;
 }
 
-const COLUMNS = generateColumns();
-
-// ─── Table rendering ──────────────────────────────────────────────────────────
+// ─── Cashflow table ───────────────────────────────────────────────────────────
 function buildCashflowTable() {
-  const headerRow = document.getElementById('month-header-row');
-  const incomeRow = document.getElementById('income-row');
-  const expenseRow = document.getElementById('expense-row');
-  const balanceRow = document.getElementById('balance-row');
+  const hr = document.getElementById('month-header-row');
+  const rows = { income: document.getElementById('income-row'), expenses: document.getElementById('expense-row'), balance: document.getElementById('balance-row') };
+  [hr, rows.income, rows.expenses, rows.balance].forEach(r => { while (r.children.length > 1) r.removeChild(r.lastChild); });
 
-  // Clear existing dynamic cells
-  while (headerRow.children.length > 1) headerRow.removeChild(headerRow.lastChild);
-  while (incomeRow.children.length > 1) incomeRow.removeChild(incomeRow.lastChild);
-  while (expenseRow.children.length > 1) expenseRow.removeChild(expenseRow.lastChild);
-  while (balanceRow.children.length > 1) balanceRow.removeChild(balanceRow.lastChild);
-
-  COLUMNS.forEach((col, i) => {
+  COLUMNS.forEach(col => {
     const isYear = col.type === 'year';
-    const isFirst = col.isFirst;
-
-    // Header
     const th = document.createElement('th');
     th.textContent = col.label;
-    if (isYear) th.style.background = 'rgba(251,191,36,0.1)';
-    if (isFirst) th.style.color = 'var(--accent)';
-    headerRow.appendChild(th);
-
-    // Income cell
-    incomeRow.appendChild(makeEditCell(col.key, 'income', isYear, isFirst));
-    // Expense cell
-    expenseRow.appendChild(makeEditCell(col.key, 'expenses', isYear, isFirst));
-    // Balance cell (readonly)
-    balanceRow.appendChild(makeBalanceCell(col.key, isYear, isFirst));
+    if (isYear) th.style.background = 'rgba(251,191,36,.1)';
+    if (col.isFirst) th.style.color = 'var(--accent)';
+    hr.appendChild(th);
+    rows.income.appendChild(makeEditCell(col, 'income'));
+    rows.expenses.appendChild(makeEditCell(col, 'expenses'));
+    rows.balance.appendChild(makeBalanceCell(col));
   });
-
   updateAllBalances();
 }
 
-function makeEditCell(colKey, field, isYear, isFirst) {
+function makeEditCell(col, field) {
   const td = document.createElement('td');
-  if (isYear) td.classList.add('year-col');
-
-  if (isYear) {
-    // Year = sum of 12 months of that year
-    const span = document.createElement('span');
-    span.className = 'cell-readonly';
-    span.id = `cell-${colKey}-${field}`;
-    td.appendChild(span);
-  } else {
-    const input = document.createElement('input');
-    input.type = 'number';
-    input.className = 'cell-input';
-    input.placeholder = '0';
-    input.step = '1000';
-    input.id = `cell-${colKey}-${field}`;
-    const val = (state.cashflow[colKey] || {})[field] || '';
-    input.value = val ? val : '';
-    input.addEventListener('input', () => {
-      if (!state.cashflow[colKey]) state.cashflow[colKey] = {};
-      state.cashflow[colKey][field] = parseFloat(input.value) || 0;
-      updateAllBalances();
-      saveState();
-    });
-    td.appendChild(input);
-  }
-  return td;
+  if (col.type === 'year') { td.classList.add('year-col'); const sp = document.createElement('span'); sp.className='cell-readonly'; sp.id=`cell-${col.key}-${field}`; td.appendChild(sp); return td; }
+  const inp = document.createElement('input');
+  inp.type='number'; inp.className='cell-input'; inp.placeholder='0'; inp.step='1000';
+  inp.id=`cell-${col.key}-${field}`;
+  inp.value = (state.cashflow[col.key]||{})[field] || '';
+  inp.addEventListener('input', () => {
+    if (!state.cashflow[col.key]) state.cashflow[col.key] = {};
+    state.cashflow[col.key][field] = parseFloat(inp.value) || 0;
+    updateAllBalances(); scheduleSave();
+  });
+  td.appendChild(inp); return td;
 }
 
-function makeBalanceCell(colKey, isYear, isFirst) {
+function makeBalanceCell(col) {
   const td = document.createElement('td');
-  if (isYear) td.classList.add('year-col');
-  const span = document.createElement('span');
-  span.className = 'cell-readonly';
-  span.id = `balance-${colKey}`;
-  td.appendChild(span);
-  return td;
+  if (col.type === 'year') td.classList.add('year-col');
+  const sp = document.createElement('span'); sp.className='cell-readonly'; sp.id=`balance-${col.key}`; td.appendChild(sp); return td;
 }
 
 function updateAllBalances() {
-  // Update monthly balances
   COLUMNS.forEach(col => {
     if (col.type === 'month') {
-      const cf = state.cashflow[col.key] || {};
-      const income = cf.income || 0;
-      const expenses = cf.expenses || 0;
-      const balance = income - expenses;
+      const cf = state.cashflow[col.key]||{};
+      const b = (cf.income||0) - (cf.expenses||0);
       const el = document.getElementById(`balance-${col.key}`);
-      if (el) {
-        el.textContent = fmt(balance);
-        el.className = 'cell-readonly ' + (balance > 0 ? 'positive' : balance < 0 ? 'negative' : 'neutral');
-      }
+      if (el) { el.textContent = fmt(b); el.className = 'cell-readonly ' + (b>0?'positive':b<0?'negative':'neutral'); }
     } else {
-      // Year: sum months of that year
-      const yearNum = parseInt(col.key.replace('year-', ''));
-      let income = 0, expenses = 0;
-      COLUMNS.filter(c => c.type === 'month' && c.key.startsWith(String(yearNum))).forEach(mc => {
-        const cf = state.cashflow[mc.key] || {};
-        income += cf.income || 0;
-        expenses += cf.expenses || 0;
-      });
-      const balance = income - expenses;
-
-      const incEl = document.getElementById(`cell-${col.key}-income`);
-      const expEl = document.getElementById(`cell-${col.key}-expenses`);
-      const balEl = document.getElementById(`balance-${col.key}`);
-
-      if (incEl) incEl.textContent = fmt(income);
-      if (expEl) expEl.textContent = fmt(expenses);
-      if (balEl) {
-        balEl.textContent = fmt(balance);
-        balEl.className = 'cell-readonly ' + (balance > 0 ? 'positive' : balance < 0 ? 'negative' : 'neutral');
-      }
+      const y = parseInt(col.key.replace('year-',''));
+      let inc=0, exp=0;
+      COLUMNS.filter(c=>c.type==='month'&&c.key.startsWith(String(y))).forEach(mc=>{const cf=state.cashflow[mc.key]||{};inc+=cf.income||0;exp+=cf.expenses||0;});
+      const b = inc - exp;
+      const ie = document.getElementById(`cell-${col.key}-income`); if(ie) ie.textContent=fmt(inc);
+      const ee = document.getElementById(`cell-${col.key}-expenses`); if(ee) ee.textContent=fmt(exp);
+      const be = document.getElementById(`balance-${col.key}`); if(be){be.textContent=fmt(b);be.className='cell-readonly '+(b>0?'positive':b<0?'negative':'neutral');}
     }
   });
 }
 
 // ─── Loans ────────────────────────────────────────────────────────────────────
 function addLoan(data) {
-  const loan = data || {
-    id: Date.now(),
-    name: `Кредит ${state.loans.length + 1}`,
-    balance: 0,
-    rate: 0,
-    payment: 0,
-    term: 0,
-    extraPayment: 0
-  };
-  state.loans.push(loan);
-  renderLoans();
-  saveState();
+  const loan = data || { id: Date.now(), name: `Кредит ${state.loans.length+1}`, balance:0, rate:0, payment:0, term:0, extraPayment:0 };
+  state.loans.push(loan); renderLoans(); scheduleSave();
 }
 
-function removeLoan(id) {
-  state.loans = state.loans.filter(l => l.id !== id);
-  renderLoans();
-  saveState();
-}
+function removeLoan(id) { state.loans = state.loans.filter(l=>l.id!==id); renderLoans(); scheduleSave(); }
 
 function renderLoans() {
-  const container = document.getElementById('loans-container');
-  const hint = document.getElementById('loans-hint');
-  container.innerHTML = '';
-  hint.style.display = state.loans.length ? 'none' : 'block';
-
+  const c = document.getElementById('loans-container');
+  const h = document.getElementById('loans-hint');
+  c.innerHTML = ''; h.style.display = state.loans.length ? 'none' : 'block';
   state.loans.forEach(loan => {
-    const div = document.createElement('div');
-    div.className = 'loan-card';
-    div.innerHTML = buildLoanHTML(loan);
-    container.appendChild(div);
+    const div = document.createElement('div'); div.className='loan-card';
+    div.innerHTML = buildLoanHTML(loan); c.appendChild(div);
     attachLoanEvents(div, loan);
   });
 }
 
 function buildLoanHTML(loan) {
-  const stats = calcLoanStats(loan);
-  const hasSavings = stats.savingsTotal > 0;
-
+  const s = calcLoanStats(loan);
   return `
     <div class="loan-header">
       <span style="font-size:20px">🏦</span>
-      <input class="loan-name-input" value="${escHtml(loan.name)}" placeholder="Название кредита" data-field="name">
-      <button class="btn btn-danger" onclick="removeLoan(${loan.id})">✕ Удалить</button>
+      <input class="loan-name-input" value="${esc(loan.name)}" placeholder="Название" data-field="name">
+      <button class="btn btn-danger" onclick="removeLoan(${loan.id})">✕</button>
     </div>
     <div class="loan-body">
       <div class="loan-grid">
-        <div class="field">
-          <label>💰 Остаток тела (₽)</label>
-          <input type="number" step="1000" value="${loan.balance || ''}" placeholder="0" data-field="balance" data-id="${loan.id}">
-        </div>
-        <div class="field">
-          <label>📊 Ставка годовая (%)</label>
-          <input type="number" step="0.1" value="${loan.rate || ''}" placeholder="0.0" data-field="rate" data-id="${loan.id}">
-        </div>
-        <div class="field">
-          <label>📅 Ежемесячный платёж (₽)</label>
-          <input type="number" step="500" value="${loan.payment || ''}" placeholder="0" data-field="payment" data-id="${loan.id}">
-        </div>
-        <div class="field">
-          <label>⏳ Оставшийся срок (мес.)</label>
-          <input type="number" step="1" value="${loan.term || ''}" placeholder="0" data-field="term" data-id="${loan.id}">
-        </div>
-        <div class="field" style="border-left: 2px solid var(--yellow); padding-left: 10px;">
-          <label>⚡ Досрочное погашение/мес (₽)</label>
-          <input type="number" step="1000" value="${loan.extraPayment || ''}" placeholder="0" data-field="extraPayment" data-id="${loan.id}">
-        </div>
+        <div class="field"><label>💰 Остаток тела (₽)</label><input type="number" step="1000" value="${loan.balance||''}" placeholder="0" data-field="balance" data-id="${loan.id}"></div>
+        <div class="field"><label>📊 Ставка годовая (%)</label><input type="number" step="0.1" value="${loan.rate||''}" placeholder="0.0" data-field="rate" data-id="${loan.id}"></div>
+        <div class="field"><label>📅 Платёж/мес (₽)</label><input type="number" step="500" value="${loan.payment||''}" placeholder="0" data-field="payment" data-id="${loan.id}"></div>
+        <div class="field"><label>⏳ Срок (мес)</label><input type="number" step="1" value="${loan.term||''}" placeholder="0" data-field="term" data-id="${loan.id}"></div>
+        <div class="field" style="border-left:2px solid var(--yellow);padding-left:10px"><label>⚡ Досрочное/мес (₽)</label><input type="number" step="1000" value="${loan.extraPayment||''}" placeholder="0" data-field="extraPayment" data-id="${loan.id}"></div>
       </div>
-
-      <div class="loan-stats" id="stats-${loan.id}">
-        ${renderStats(stats, loan)}
-      </div>
-    </div>
-  `;
+      <div class="loan-stats" id="stats-${loan.id}">${renderStats(s, loan)}</div>
+    </div>`;
 }
 
-function renderStats(stats, loan) {
-  if (!loan.balance && !loan.payment) return '<span style="color:var(--muted);font-size:13px">Введите данные кредита для расчёта</span>';
-
-  const hasSavings = stats.savingsTotal > 0 && loan.extraPayment > 0;
+function renderStats(s, loan) {
+  if (!loan.balance && !loan.payment) return '<span style="color:var(--muted);font-size:13px">Введите данные для расчёта</span>';
+  const hasSav = s.savingsTotal > 0 && loan.extraPayment > 0;
   return `
-    <div class="stat">
-      <span class="stat-label">Итого выплат (без досрочных)</span>
-      <span class="stat-value">${fmt(stats.totalWithout)}</span>
-      <span class="stat-sub">за ${stats.monthsWithout} мес · переплата ${fmt(stats.overPayWithout)}</span>
-    </div>
-    <div class="stat">
-      <span class="stat-label">Итого с досрочными (+${fmt(loan.extraPayment)}/мес)</span>
-      <span class="stat-value ${hasSavings ? 'positive' : ''}">${fmt(stats.totalWith)}</span>
-      <span class="stat-sub">за ${stats.monthsWith} мес · переплата ${fmt(stats.overPayWith)}</span>
-    </div>
-    <div class="stat">
-      <span class="stat-label">💚 Экономия на процентах</span>
-      <span class="stat-value positive">${fmt(stats.savingsTotal)}</span>
-      <span class="stat-sub">-${stats.monthsSaved} мес · ${fmt(stats.monthlySave)}/мес в среднем</span>
-    </div>
-  `;
+    <div class="stat"><span class="stat-label">Итого выплат (без досрочных)</span><span class="stat-value">${fmt(s.totalWithout)}</span><span class="stat-sub">за ${s.monthsWithout} мес · переплата ${fmt(s.overPayWithout)}</span></div>
+    <div class="stat"><span class="stat-label">С досрочными (+${fmt(loan.extraPayment)}/мес)</span><span class="stat-value ${hasSav?'positive':''}">${fmt(s.totalWith)}</span><span class="stat-sub">за ${s.monthsWith} мес · переплата ${fmt(s.overPayWith)}</span></div>
+    <div class="stat"><span class="stat-label">💚 Экономия</span><span class="stat-value positive">${fmt(s.savingsTotal)}</span><span class="stat-sub">−${s.monthsSaved} мес</span></div>`;
 }
 
 function calcLoanStats(loan) {
-  const balance = parseFloat(loan.balance) || 0;
-  const annualRate = parseFloat(loan.rate) || 0;
-  const payment = parseFloat(loan.payment) || 0;
-  const extraPayment = parseFloat(loan.extraPayment) || 0;
-  const term = parseInt(loan.term) || 0;
-
-  if (!balance || !payment) return { totalWithout: 0, totalWith: 0, savingsTotal: 0, monthsWithout: 0, monthsWith: 0, overPayWithout: 0, overPayWith: 0, monthlySave: 0, monthsSaved: 0 };
-
-  const monthlyRate = annualRate / 100 / 12;
-
-  // Without extra payment
-  let bal1 = balance, months1 = 0, paid1 = 0;
-  for (let i = 0; i < 600 && bal1 > 0; i++) {
-    const interest = monthlyRate > 0 ? bal1 * monthlyRate : 0;
-    const principal = Math.min(payment - interest, bal1);
-    if (principal <= 0 && monthlyRate > 0) { months1 = 999; break; }
-    bal1 -= principal;
-    if (bal1 < 0) bal1 = 0;
-    paid1 += Math.min(payment, payment - interest + interest);
-    months1++;
-    if (bal1 <= 0) break;
-  }
-  if (months1 === 0 && term > 0) months1 = term;
-  const totalWithout = months1 * payment;
-  const overPayWithout = totalWithout - balance;
-
-  // With extra payment
-  let bal2 = balance, months2 = 0, paid2 = 0;
-  for (let i = 0; i < 600 && bal2 > 0; i++) {
-    const interest = monthlyRate > 0 ? bal2 * monthlyRate : 0;
-    const principal = payment - interest + extraPayment;
-    const actualPrincipal = Math.min(principal, bal2);
-    bal2 -= Math.max(0, actualPrincipal);
-    if (bal2 < 0) bal2 = 0;
-    paid2 += Math.min(payment + extraPayment, payment + extraPayment - Math.max(0, actualPrincipal - (payment + extraPayment - interest)));
-    months2++;
-    if (bal2 <= 0) break;
-  }
-  const totalWith = months2 * (payment + extraPayment);
-  const overPayWith = totalWith - balance;
-  const savingsTotal = Math.max(0, overPayWithout - overPayWith);
-  const monthsSaved = Math.max(0, months1 - months2);
-
-  return {
-    totalWithout: Math.round(totalWithout),
-    totalWith: Math.round(totalWith),
-    savingsTotal: Math.round(savingsTotal),
-    monthsWithout: months1,
-    monthsWith: months2,
-    overPayWithout: Math.round(overPayWithout),
-    overPayWith: Math.round(overPayWith),
-    monthlySave: months2 > 0 ? Math.round(savingsTotal / months2) : 0,
-    monthsSaved
-  };
+  const bal = parseFloat(loan.balance)||0, rate = parseFloat(loan.rate)||0, pmt = parseFloat(loan.payment)||0, extra = parseFloat(loan.extraPayment)||0;
+  if (!bal || !pmt) return {totalWithout:0,totalWith:0,savingsTotal:0,monthsWithout:0,monthsWith:0,overPayWithout:0,overPayWith:0,monthsSaved:0};
+  const mr = rate/100/12;
+  let b1=bal,m1=0,paid1=0; for(let i=0;i<600&&b1>0;i++){const int=mr?b1*mr:0;const pr=pmt-int;if(pr<=0&&mr){m1=999;break;}b1-=Math.min(pr,b1);if(b1<0)b1=0;paid1+=pmt;m1++;if(b1<=0)break;}
+  let b2=bal,m2=0; for(let i=0;i<600&&b2>0;i++){const int=mr?b2*mr:0;const pr=pmt+extra-int;b2-=Math.min(pr,b2);if(b2<0)b2=0;m2++;if(b2<=0)break;}
+  const tw=m1*pmt,twEx=m2*(pmt+extra);
+  return {totalWithout:Math.round(tw),totalWith:Math.round(twEx),savingsTotal:Math.max(0,Math.round((tw-bal)-(twEx-bal))),monthsWithout:m1,monthsWith:m2,overPayWithout:Math.round(tw-bal),overPayWith:Math.round(twEx-bal),monthsSaved:Math.max(0,m1-m2)};
 }
 
 function attachLoanEvents(container, loan) {
-  container.querySelectorAll('input[data-field]').forEach(input => {
-    const field = input.dataset.field;
-    input.addEventListener('input', () => {
-      const idx = state.loans.findIndex(l => l.id === loan.id);
-      if (idx === -1) return;
-      if (field === 'name') {
-        state.loans[idx].name = input.value;
-      } else {
-        state.loans[idx][field] = parseFloat(input.value) || 0;
-      }
-      // Refresh stats only
-      const statsEl = container.querySelector(`#stats-${loan.id}`);
-      if (statsEl) statsEl.innerHTML = renderStats(calcLoanStats(state.loans[idx]), state.loans[idx]);
-      saveState();
+  container.querySelectorAll('input[data-field]').forEach(inp => {
+    const field = inp.dataset.field;
+    inp.addEventListener('input', () => {
+      const idx = state.loans.findIndex(l=>l.id===loan.id); if(idx===-1)return;
+      if(field==='name') state.loans[idx].name=inp.value;
+      else state.loans[idx][field]=parseFloat(inp.value)||0;
+      const se = container.querySelector(`#stats-${loan.id}`);
+      if(se) se.innerHTML=renderStats(calcLoanStats(state.loans[idx]),state.loans[idx]);
+      scheduleSave();
     });
   });
 }
 
 // ─── Utils ────────────────────────────────────────────────────────────────────
-function fmt(n) {
-  if (!n && n !== 0) return '—';
-  return new Intl.NumberFormat('ru-RU', { style: 'currency', currency: 'RUB', maximumFractionDigits: 0 }).format(n);
+function fmt(n) { if(!n&&n!==0)return'—'; return new Intl.NumberFormat('ru-RU',{style:'currency',currency:'RUB',maximumFractionDigits:0}).format(n); }
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+// ─── GitHub Sync ─────────────────────────────────────────────────────────────
+function setSyncStatus(state, label) {
+  const dot = document.getElementById('sync-dot'), lbl = document.getElementById('sync-label');
+  dot.className = 'sync-dot ' + state; lbl.textContent = label;
 }
 
-function escHtml(s) {
-  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-
-// ─── Storage ──────────────────────────────────────────────────────────────────
-function saveState() {
+async function loadFromGitHub() {
+  if (!ghToken) { setSyncStatus('','не настроено'); return; }
+  setSyncStatus('saving', 'загрузка...');
   try {
-    localStorage.setItem('finance_v1', JSON.stringify(state));
-    const now = new Date();
-    const t = now.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
-    document.getElementById('last-saved').textContent = `сохранено в ${t}`;
-    document.getElementById('footer-time').textContent = now.toLocaleString('ru-RU');
-  } catch(e) {}
+    const r = await fetch(`https://api.github.com/repos/${REPO_OWNER}/${REPO_DATA}/contents/${DATA_FILE}`, {
+      headers: { 'Authorization': `token ${ghToken}`, 'Accept': 'application/vnd.github.v3+json' }
+    });
+    if (r.status === 404) { setSyncStatus('ok','новый файл'); return; }
+    if (!r.ok) throw new Error(r.statusText);
+    const d = await r.json();
+    dataSha = d.sha;
+    const raw = atob(d.content.replace(/\n/g,''));
+    const loaded = JSON.parse(raw);
+    state = { cashflow: {}, loans: [], ...loaded };
+    rebuildUI();
+    setSyncStatus('ok', 'синхронизировано · ' + new Date().toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'}));
+  } catch(e) {
+    setSyncStatus('error', 'ошибка загрузки');
+    console.error(e);
+  }
 }
 
-function loadState() {
+async function saveToGitHub() {
+  if (!ghToken) return;
+  setSyncStatus('saving', 'сохранение...');
   try {
-    const raw = localStorage.getItem('finance_v1');
-    if (raw) {
-      const saved = JSON.parse(raw);
-      state = { cashflow: {}, loans: [], ...saved };
-    }
-  } catch(e) {}
+    const content = btoa(unescape(encodeURIComponent(JSON.stringify(state, null, 2))));
+    const body = { message: 'Update finance data', content };
+    if (dataSha) body.sha = dataSha;
+    const r = await fetch(`https://api.github.com/repos/${REPO_OWNER}/${REPO_DATA}/contents/${DATA_FILE}`, {
+      method: 'PUT',
+      headers: { 'Authorization': `token ${ghToken}`, 'Content-Type': 'application/json', 'Accept': 'application/vnd.github.v3+json' },
+      body: JSON.stringify(body)
+    });
+    if (!r.ok) throw new Error(r.statusText);
+    const d = await r.json(); dataSha = d.content.sha;
+    setSyncStatus('ok', 'сохранено · ' + new Date().toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'}));
+    document.getElementById('footer-time').textContent = new Date().toLocaleString('ru-RU');
+  } catch(e) {
+    setSyncStatus('error', 'ошибка сохранения');
+    console.error(e);
+  }
+}
+
+function scheduleSave() {
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(saveToGitHub, 1500); // сохраняем через 1.5с после последнего изменения
+}
+
+// ─── Token setup ─────────────────────────────────────────────────────────────
+function showSetup() { document.getElementById('setup-modal').style.display='flex'; document.getElementById('token-input').value = ghToken||''; }
+function closeModal() { document.getElementById('setup-modal').style.display='none'; }
+
+async function saveToken() {
+  const t = document.getElementById('token-input').value.trim();
+  const errEl = document.getElementById('token-error');
+  if (!t) { errEl.style.display='block'; errEl.textContent='Введи токен'; return; }
+  errEl.style.display='none';
+  setSyncStatus('saving','проверка...');
+  try {
+    const r = await fetch('https://api.github.com/user', { headers: { 'Authorization': `token ${t}` } });
+    if (!r.ok) throw new Error('Неверный токен');
+    ghToken = t; localStorage.setItem('gh_token', t);
+    closeModal(); await loadFromGitHub();
+  } catch(e) {
+    errEl.style.display='block'; errEl.textContent='Ошибка: ' + e.message;
+    setSyncStatus('error','ошибка');
+  }
 }
 
 // ─── Init ─────────────────────────────────────────────────────────────────────
-function init() {
-  loadState();
-  buildCashflowTable();
-
+function rebuildUI() {
+  buildCashflowTable(); renderLoans();
   if (state.loans.length === 0) {
-    // Add 5 default empty loans
-    for (let i = 1; i <= 5; i++) {
-      state.loans.push({ id: Date.now() + i, name: `Кредит ${i}`, balance: 0, rate: 0, payment: 0, term: 0, extraPayment: 0 });
-    }
+    for (let i=1;i<=5;i++) state.loans.push({id:Date.now()+i,name:`Кредит ${i}`,balance:0,rate:0,payment:0,term:0,extraPayment:0});
+    renderLoans();
   }
-  renderLoans();
-
-  document.getElementById('footer-time').textContent = new Date().toLocaleString('ru-RU');
 }
 
-init();
+document.getElementById('footer-time').textContent = new Date().toLocaleString('ru-RU');
+rebuildUI();
+if (ghToken) loadFromGitHub();
+else setTimeout(() => showSetup(), 500);
 </script>
 </body>
 </html>
