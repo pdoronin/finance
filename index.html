@@ -285,7 +285,6 @@ function buildLoanHTML(loan) {
         <input class="loan-name-input loan-header-name" value="${esc(loan.name)}" placeholder="Название" data-field="name" onclick="event.stopPropagation()">
         <span id="summary-${loan.id}" class="loan-header-summary">${isOpen ? '' : summaryText}</span>
       </div>
-      <button class="btn btn-danger" onclick="event.stopPropagation();removeLoan(${loan.id})" style="flex-shrink:0">✕</button>
     </div>
     <div class="loan-body" id="body-${loan.id}" style="display:${isOpen ? 'block' : 'none'}">
       <div class="loan-grid">
@@ -296,6 +295,9 @@ function buildLoanHTML(loan) {
         <div class="field" style="border-left:2px solid var(--yellow);padding-left:10px"><label>⚡ Досрочное/мес (₽)</label><input type="number" step="1000" value="${loan.extraPayment||''}" placeholder="0" data-field="extraPayment" data-id="${loan.id}"></div>
       </div>
       <div class="loan-stats" id="stats-${loan.id}">${renderStats(s, loan)}</div>
+      <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border);display:flex;justify-content:flex-end" id="delete-area-${loan.id}">
+        <button class="btn btn-danger" onclick="confirmDelete(${loan.id})">🗑 Удалить кредит</button>
+      </div>
     </div>`;
 }
 
@@ -316,6 +318,23 @@ function calcLoanStats(loan) {
   let b2=bal,m2=0; for(let i=0;i<600&&b2>0;i++){const int=mr?b2*mr:0;const pr=pmt+extra-int;b2-=Math.min(pr,b2);if(b2<0)b2=0;m2++;if(b2<=0)break;}
   const tw=m1*pmt,twEx=m2*(pmt+extra);
   return {totalWithout:Math.round(tw),totalWith:Math.round(twEx),savingsTotal:Math.max(0,Math.round((tw-bal)-(twEx-bal))),monthsWithout:m1,monthsWith:m2,overPayWithout:Math.round(tw-bal),overPayWith:Math.round(twEx-bal),monthsSaved:Math.max(0,m1-m2)};
+}
+
+function confirmDelete(id) {
+  const area = document.getElementById(`delete-area-${id}`);
+  const loan = state.loans.find(l => l.id === id);
+  if (!area || !loan) return;
+  area.innerHTML = `
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+      <span style="font-size:13px;color:var(--red)">Удалить «${esc(loan.name)}»?</span>
+      <button class="btn btn-danger" onclick="removeLoan(${id})">Да, удалить</button>
+      <button class="btn btn-outline btn-sm" onclick="cancelDelete(${id})">Отмена</button>
+    </div>`;
+}
+
+function cancelDelete(id) {
+  const area = document.getElementById(`delete-area-${id}`);
+  if (area) area.innerHTML = `<button class="btn btn-danger" onclick="confirmDelete(${id})">🗑 Удалить кредит</button>`;
 }
 
 function toggleLoan(id) {
