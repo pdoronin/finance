@@ -9,6 +9,42 @@
       "payment": 27333,
       "term": 30,
       "extraPayment": 0
+    },
+    {
+      "id": 1002,
+      "name": "Т-Банк",
+      "balance": 1114466,
+      "rate": 36.9,
+      "payment": 41680,
+      "term": 55,
+      "extraPayment": 0
+    },
+    {
+      "id": 1003,
+      "name": "Кредит 3",
+      "balance": 0,
+      "rate": 0,
+      "payment": 0,
+      "term": 0,
+      "extraPayment": 0
+    },
+    {
+      "id": 1004,
+      "name": "Кредит 4",
+      "balance": 0,
+      "rate": 0,
+      "payment": 0,
+      "term": 0,
+      "extraPayment": 0
+    },
+    {
+      "id": 1005,
+      "name": "Кредит 5",
+      "balance": 0,
+      "rate": 0,
+      "payment": 0,
+      "term": 0,
+      "extraPayment": 0
     }
   ]
 }
