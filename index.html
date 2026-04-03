@@ -332,23 +332,17 @@ function setSyncStatus(state, label) {
 async function loadFromGitHub() {
   setSyncStatus('saving', 'загрузка...');
   try {
-    // Читаем публично из pdoronin/finance — без токена
-    const r = await fetch(`https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_OWNER}/finance/main/data.json?_=${Date.now()}`);
-    // Пробуем оба пути
-    let raw;
-    if (r.ok) {
-      raw = await r.text();
-    } else {
-      // Альтернативный путь через API (для чтения токен не нужен для публичного репо)
-      const r2 = await fetch(`https://api.github.com/repos/${REPO_OWNER}/finance/contents/${DATA_FILE}`, {
-        headers: ghToken ? { 'Authorization': `token ${ghToken}`, 'Accept': 'application/vnd.github.v3+json' } : { 'Accept': 'application/vnd.github.v3+json' }
-      });
-      if (r2.status === 404) { setSyncStatus('ok','пустой файл'); return; }
-      if (!r2.ok) throw new Error(r2.statusText);
-      const d = await r2.json();
-      dataSha = d.sha;
-      raw = atob(d.content.replace(/\n/g,''));
-    }
+    // Читаем через GitHub API — надёжно декодируем base64 как utf-8
+    const headers = { 'Accept': 'application/vnd.github.v3+json' };
+    if (ghToken) headers['Authorization'] = `token ${ghToken}`;
+    const r = await fetch(`https://api.github.com/repos/${REPO_OWNER}/finance/contents/${DATA_FILE}`, { headers });
+    if (r.status === 404) { setSyncStatus('ok','нет данных'); return; }
+    if (!r.ok) throw new Error(r.statusText);
+    const d = await r.json();
+    dataSha = d.sha;
+    // Правильное UTF-8 декодирование
+    const bytes = Uint8Array.from(atob(d.content.replace(/\n/g,'')), c => c.charCodeAt(0));
+    const raw = new TextDecoder('utf-8').decode(bytes);
     const loaded = JSON.parse(raw);
     state = { cashflow: {}, loans: [], ...loaded };
     rebuildUI();
