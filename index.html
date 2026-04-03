@@ -274,12 +274,12 @@ function buildLoanHTML(loan) {
   const s = calcLoanStats(loan);
   const isOpen = loanOpen[loan.id] !== false; // по умолчанию открыт
   const arrow = isOpen ? '▾' : '▸';
-  const summaryText = loan.balance ? `${fmt(loan.balance)} · ${loan.rate}% · ${fmt(loan.payment)}/мес` : 'не заполнен';
+  const summaryText = loan.balance ? `<span style="display:block;font-size:13px;color:var(--text)">${fmt(loan.balance)}</span><span style="display:block;font-size:11px">${loan.rate}% · ${fmt(loan.payment)}/мес</span>` : '<span style="font-size:13px">не заполнен</span>';
   return `
     <div class="loan-header" onclick="toggleLoan(${loan.id})" style="cursor:pointer">
       <div class="loan-toggle-btn" id="arrow-${loan.id}">${arrow}</div>
       <input class="loan-name-input" value="${esc(loan.name)}" placeholder="Название" data-field="name" onclick="event.stopPropagation()">
-      <span class="loan-summary" id="summary-${loan.id}" style="font-size:12px;color:var(--muted);white-space:nowrap;margin-right:8px">${isOpen ? '' : summaryText}</span>
+      <span class="loan-summary" id="summary-${loan.id}" style="font-size:12px;color:var(--muted);flex:1;min-width:0;line-height:1.4">${isOpen ? '' : summaryText}</span>
       <button class="btn btn-danger" onclick="event.stopPropagation();removeLoan(${loan.id})">✕</button>
     </div>
     <div class="loan-body" id="body-${loan.id}" style="display:${isOpen ? 'block' : 'none'}">
@@ -323,7 +323,7 @@ function toggleLoan(id) {
   if (body) body.style.display = isOpen ? 'block' : 'none';
   if (arrow) arrow.textContent = isOpen ? '▾' : '▸';
 
-  if (summary && loan) summary.textContent = isOpen ? '' : (loan.balance ? `${fmt(loan.balance)} · ${loan.rate}% · ${fmt(loan.payment)}/мес` : 'не заполнен');
+  if (summary && loan) summary.innerHTML = isOpen ? '' : (loan.balance ? `<span style="display:block;font-size:13px;color:var(--text)">${fmt(loan.balance)}</span><span style="display:block;font-size:11px">${loan.rate}% · ${fmt(loan.payment)}/мес</span>` : '<span style="font-size:13px">не заполнен</span>');
 }
 
 function attachLoanEvents(container, loan) {
@@ -337,7 +337,7 @@ function attachLoanEvents(container, loan) {
       if(se) se.innerHTML=renderStats(calcLoanStats(state.loans[idx]),state.loans[idx]);
       // обновляем summary в свёрнутом виде
       const sm = document.getElementById(`summary-${loan.id}`);
-      if(sm && loanOpen[loan.id] === false) { const l=state.loans[idx]; sm.textContent = l.balance ? `${fmt(l.balance)} · ${l.rate}% · ${fmt(l.payment)}/мес` : 'не заполнен'; }
+      if(sm && loanOpen[loan.id] === false) { const l=state.loans[idx]; sm.innerHTML = l.balance ? `<span style="display:block;font-size:13px;color:var(--text)">${fmt(l.balance)}</span><span style="display:block;font-size:11px">${l.rate}% · ${fmt(l.payment)}/мес</span>` : '<span style="font-size:13px">не заполнен</span>'; }
       scheduleSave();
     });
   });
