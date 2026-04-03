@@ -76,9 +76,12 @@
   /* Loans */
   .loan-card { border-bottom: 1px solid var(--border); }
   .loan-card:last-child { border-bottom: none; }
-  .loan-header { padding: 16px 20px; display: flex; align-items: center; gap: 14px; background: var(--surface2); min-height: 60px; }
-  .loan-toggle-btn { width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 10px; background: rgba(255,255,255,0.07); flex-shrink: 0; font-size: 20px; transition: background .15s; }
+  .loan-header { padding: 14px 16px; display: flex; align-items: center; gap: 10px; background: var(--surface2); min-height: 56px; }
+  .loan-toggle-btn { width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; border-radius: 10px; background: rgba(255,255,255,0.07); flex-shrink: 0; font-size: 22px; transition: background .15s; }
   .loan-header:active .loan-toggle-btn { background: rgba(255,255,255,0.15); }
+  .loan-header-center { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; overflow: hidden; }
+  .loan-header-name { font-size: 15px; font-weight: 600; }
+  .loan-header-summary { font-size: 12px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .loan-name-input { background: transparent; border: none; outline: none; color: var(--text); font-size: 15px; font-weight: 600; font-family: inherit; flex: 1; }
   .loan-name-input::placeholder { color: var(--muted); }
   .loan-body { padding: 16px 20px; }
@@ -274,13 +277,15 @@ function buildLoanHTML(loan) {
   const s = calcLoanStats(loan);
   const isOpen = loanOpen[loan.id] !== false; // по умолчанию открыт
   const arrow = isOpen ? '▾' : '▸';
-  const summaryText = loan.balance ? `<span style="display:block;font-size:13px;color:var(--text)">${fmt(loan.balance)}</span><span style="display:block;font-size:11px">${loan.rate}% · ${fmt(loan.payment)}/мес</span>` : '<span style="font-size:13px">не заполнен</span>';
+  const summaryText = loan.balance ? `${fmt(loan.balance)} · ${loan.rate}% · ${fmt(loan.payment)}/мес` : 'не заполнен';
   return `
     <div class="loan-header" onclick="toggleLoan(${loan.id})" style="cursor:pointer">
       <div class="loan-toggle-btn" id="arrow-${loan.id}">${arrow}</div>
-      <input class="loan-name-input" value="${esc(loan.name)}" placeholder="Название" data-field="name" onclick="event.stopPropagation()">
-      <span class="loan-summary" id="summary-${loan.id}" style="font-size:12px;color:var(--muted);flex:1;min-width:0;line-height:1.4">${isOpen ? '' : summaryText}</span>
-      <button class="btn btn-danger" onclick="event.stopPropagation();removeLoan(${loan.id})">✕</button>
+      <div class="loan-header-center">
+        <input class="loan-name-input loan-header-name" value="${esc(loan.name)}" placeholder="Название" data-field="name" onclick="event.stopPropagation()">
+        <span id="summary-${loan.id}" class="loan-header-summary">${isOpen ? '' : summaryText}</span>
+      </div>
+      <button class="btn btn-danger" onclick="event.stopPropagation();removeLoan(${loan.id})" style="flex-shrink:0">✕</button>
     </div>
     <div class="loan-body" id="body-${loan.id}" style="display:${isOpen ? 'block' : 'none'}">
       <div class="loan-grid">
@@ -323,7 +328,7 @@ function toggleLoan(id) {
   if (body) body.style.display = isOpen ? 'block' : 'none';
   if (arrow) arrow.textContent = isOpen ? '▾' : '▸';
 
-  if (summary && loan) summary.innerHTML = isOpen ? '' : (loan.balance ? `<span style="display:block;font-size:13px;color:var(--text)">${fmt(loan.balance)}</span><span style="display:block;font-size:11px">${loan.rate}% · ${fmt(loan.payment)}/мес</span>` : '<span style="font-size:13px">не заполнен</span>');
+  if (summary && loan) summary.textContent = isOpen ? '' : (loan.balance ? `${fmt(loan.balance)} · ${loan.rate}% · ${fmt(loan.payment)}/мес` : 'не заполнен');
 }
 
 function attachLoanEvents(container, loan) {
@@ -337,7 +342,7 @@ function attachLoanEvents(container, loan) {
       if(se) se.innerHTML=renderStats(calcLoanStats(state.loans[idx]),state.loans[idx]);
       // обновляем summary в свёрнутом виде
       const sm = document.getElementById(`summary-${loan.id}`);
-      if(sm && loanOpen[loan.id] === false) { const l=state.loans[idx]; sm.innerHTML = l.balance ? `<span style="display:block;font-size:13px;color:var(--text)">${fmt(l.balance)}</span><span style="display:block;font-size:11px">${l.rate}% · ${fmt(l.payment)}/мес</span>` : '<span style="font-size:13px">не заполнен</span>'; }
+      if(sm && loanOpen[loan.id] === false) { const l=state.loans[idx]; sm.textContent = l.balance ? `${fmt(l.balance)} · ${l.rate}% · ${fmt(l.payment)}/мес` : 'не заполнен'; }
       scheduleSave();
     });
   });
