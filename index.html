@@ -164,6 +164,7 @@ const YEARS_AFTER = 3;
 
 // ─── State ───────────────────────────────────────────────────────────────────
 let state = { cashflow: {}, loans: [] };
+let loanOpen = {}; // { id: true/false }
 let dataSha = null; // SHA для обновления файла на GitHub
 let saveTimer = null;
 let ghToken = localStorage.getItem('gh_token') || '';
@@ -269,13 +270,17 @@ function renderLoans() {
 
 function buildLoanHTML(loan) {
   const s = calcLoanStats(loan);
+  const isOpen = loanOpen[loan.id] !== false; // по умолчанию открыт
+  const arrow = isOpen ? '▾' : '▸';
+  const summaryText = loan.balance ? `${fmt(loan.balance)} · ${loan.rate}% · ${fmt(loan.payment)}/мес` : 'не заполнен';
   return `
-    <div class="loan-header">
-      <span style="font-size:20px">🏦</span>
-      <input class="loan-name-input" value="${esc(loan.name)}" placeholder="Название" data-field="name">
-      <button class="btn btn-danger" onclick="removeLoan(${loan.id})">✕</button>
+    <div class="loan-header" onclick="toggleLoan(${loan.id})" style="cursor:pointer">
+      <span style="font-size:16px;color:var(--muted);transition:transform .2s;display:inline-block" id="arrow-${loan.id}">${arrow}</span>
+      <input class="loan-name-input" value="${esc(loan.name)}" placeholder="Название" data-field="name" onclick="event.stopPropagation()">
+      <span class="loan-summary" id="summary-${loan.id}" style="font-size:12px;color:var(--muted);white-space:nowrap;margin-right:8px">${isOpen ? '' : summaryText}</span>
+      <button class="btn btn-danger" onclick="event.stopPropagation();removeLoan(${loan.id})">✕</button>
     </div>
-    <div class="loan-body">
+    <div class="loan-body" id="body-${loan.id}" style="display:${isOpen ? 'block' : 'none'}">
       <div class="loan-grid">
         <div class="field"><label>💰 Остаток тела (₽)</label><input type="number" step="1000" value="${loan.balance||''}" placeholder="0" data-field="balance" data-id="${loan.id}"></div>
         <div class="field"><label>📊 Ставка годовая (%)</label><input type="number" step="0.1" value="${loan.rate||''}" placeholder="0.0" data-field="rate" data-id="${loan.id}"></div>
@@ -306,6 +311,18 @@ function calcLoanStats(loan) {
   return {totalWithout:Math.round(tw),totalWith:Math.round(twEx),savingsTotal:Math.max(0,Math.round((tw-bal)-(twEx-bal))),monthsWithout:m1,monthsWith:m2,overPayWithout:Math.round(tw-bal),overPayWith:Math.round(twEx-bal),monthsSaved:Math.max(0,m1-m2)};
 }
 
+function toggleLoan(id) {
+  loanOpen[id] = loanOpen[id] === false ? true : false;
+  const body = document.getElementById(`body-${id}`);
+  const arrow = document.getElementById(`arrow-${id}`);
+  const summary = document.getElementById(`summary-${id}`);
+  const loan = state.loans.find(l => l.id === id);
+  const isOpen = loanOpen[id] !== false;
+  if (body) body.style.display = isOpen ? 'block' : 'none';
+  if (arrow) arrow.textContent = isOpen ? '▾' : '▸';
+  if (summary && loan) summary.textContent = isOpen ? '' : (loan.balance ? `${fmt(loan.balance)} · ${loan.rate}% · ${fmt(loan.payment)}/мес` : 'не заполнен');
+}
+
 function attachLoanEvents(container, loan) {
   container.querySelectorAll('input[data-field]').forEach(inp => {
     const field = inp.dataset.field;
@@ -315,6 +332,9 @@ function attachLoanEvents(container, loan) {
       else state.loans[idx][field]=parseFloat(inp.value)||0;
       const se = container.querySelector(`#stats-${loan.id}`);
       if(se) se.innerHTML=renderStats(calcLoanStats(state.loans[idx]),state.loans[idx]);
+      // обновляем summary в свёрнутом виде
+      const sm = document.getElementById(`summary-${loan.id}`);
+      if(sm && loanOpen[loan.id] === false) { const l=state.loans[idx]; sm.textContent = l.balance ? `${fmt(l.balance)} · ${l.rate}% · ${fmt(l.payment)}/мес` : 'не заполнен'; }
       scheduleSave();
     });
   });
