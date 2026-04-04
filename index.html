@@ -99,6 +99,27 @@
   .footer { text-align: center; padding: 20px; color: var(--muted); font-size: 12px; }
   .settings-link { color: var(--muted); font-size: 12px; cursor: pointer; text-decoration: underline; }
   .settings-link:hover { color: var(--text); }
+
+  /* Schedule table */
+  .schedule-toggle { display: flex; align-items: center; gap: 8px; cursor: pointer; color: var(--muted); font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .5px; padding: 10px 0 6px; user-select: none; }
+  .schedule-toggle:hover { color: var(--text); }
+  .schedule-wrap { overflow-x: auto; margin-top: 8px; border-radius: 8px; border: 1px solid var(--border); }
+  .schedule-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .schedule-table thead th { background: var(--surface2); color: var(--muted); font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; padding: 8px 10px; text-align: right; white-space: nowrap; border-bottom: 1px solid var(--border); }
+  .schedule-table thead th:first-child { text-align: left; }
+  .schedule-table tbody td { padding: 6px 10px; text-align: right; border-bottom: 1px solid rgba(42,45,64,.6); color: var(--text); white-space: nowrap; }
+  .schedule-table tbody td:first-child { text-align: left; color: var(--muted); }
+  .schedule-table tbody tr:last-child td { border-bottom: none; }
+  .schedule-table tbody tr:hover td { background: rgba(79,142,247,.05); }
+  .schedule-table .yr-row td { background: rgba(251,191,36,.05); color: var(--yellow); font-weight: 600; }
+  .schedule-table .interest-cell { color: var(--red); }
+  .schedule-table .principal-cell { color: var(--green); }
+  .schedule-table .extra-cell { color: var(--yellow); }
+  .bar-wrap { display: inline-flex; align-items: center; gap: 4px; width: 80px; }
+  .bar-bg { flex: 1; height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; }
+  .bar-int { height: 100%; background: var(--red); border-radius: 2px; transition: width .3s; }
+  .schedule-show-more { text-align: center; padding: 8px; font-size: 11px; color: var(--accent); cursor: pointer; border-top: 1px solid var(--border); }
+  .schedule-show-more:hover { background: rgba(79,142,247,.06); }
 </style>
 </head>
 <body>
@@ -295,6 +316,7 @@ function buildLoanHTML(loan) {
         <div class="field" style="border-left:2px solid var(--yellow);padding-left:10px"><label>⚡ Досрочное/мес (₽)</label><input type="number" step="1000" value="${loan.extraPayment||''}" placeholder="0" data-field="extraPayment" data-id="${loan.id}"></div>
       </div>
       <div class="loan-stats" id="stats-${loan.id}">${renderStats(s, loan)}</div>
+      <div id="sched-slot-${loan.id}">${renderScheduleTable(loan)}</div>
       <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border);display:flex;justify-content:flex-end" id="delete-area-${loan.id}">
         <button class="btn btn-danger" onclick="confirmDelete(${loan.id})">🗑 Удалить кредит</button>
       </div>
@@ -308,6 +330,118 @@ function renderStats(s, loan) {
     <div class="stat"><span class="stat-label">Итого выплат (без досрочных)</span><span class="stat-value">${fmt(s.totalWithout)}</span><span class="stat-sub">за ${s.monthsWithout} мес · переплата ${fmt(s.overPayWithout)}</span></div>
     <div class="stat"><span class="stat-label">С досрочными (+${fmt(loan.extraPayment)}/мес)</span><span class="stat-value ${hasSav?'positive':''}">${fmt(s.totalWith)}</span><span class="stat-sub">за ${s.monthsWith} мес · переплата ${fmt(s.overPayWith)}</span></div>
     <div class="stat"><span class="stat-label">💚 Экономия</span><span class="stat-value positive">${fmt(s.savingsTotal)}</span><span class="stat-sub">−${s.monthsSaved} мес</span></div>`;
+}
+
+// ─── Payment Schedule ─────────────────────────────────────────────────────────
+const scheduleState = {}; // { loanId: { open, showAll } }
+
+function buildSchedule(loan) {
+  const bal = parseFloat(loan.balance)||0, rate = parseFloat(loan.rate)||0, pmt = parseFloat(loan.payment)||0, extra = parseFloat(loan.extraPayment)||0, termMax = parseInt(loan.term)||600;
+  if (!bal || !pmt) return [];
+  const mr = rate/100/12;
+  const rows = [];
+  let b = bal, month = 0;
+  const now = new Date();
+  while (b > 0.5 && month < termMax) {
+    const d = new Date(now.getFullYear(), now.getMonth() + month, 1);
+    const label = ['Янв','Фев','Мар','Апр','Май','Июн','Июл','Авг','Сен','Окт','Ноя','Дек'][d.getMonth()] + ' ' + d.getFullYear();
+    const interest = mr ? b * mr : 0;
+    const totalPmt = Math.min(b + interest, pmt + extra);
+    const principal = totalPmt - interest;
+    b = Math.max(0, b - principal);
+    rows.push({ month: month+1, label, balance: b, interest, principal, extra: extra > 0 ? Math.min(extra, Math.max(0, principal - (pmt - interest))) : 0, total: totalPmt });
+    month++;
+  }
+  return rows;
+}
+
+function renderScheduleTable(loan) {
+  const ss = scheduleState[loan.id] || (scheduleState[loan.id] = { open: false, showAll: false });
+  const isOpen = ss.open;
+  const rows = isOpen ? buildSchedule(loan) : [];
+  const PREVIEW = 12;
+  const showAll = ss.showAll;
+  const visible = (isOpen && rows.length) ? (showAll ? rows : rows.slice(0, PREVIEW)) : [];
+
+  // Group by year for subtotals
+  function renderRows(rows) {
+    let html = '';
+    let curYear = null, yearInt = 0, yearPrin = 0, yearTotal = 0, yearExtra = 0;
+    const flush = (yr) => {
+      if (curYear !== null) {
+        html += `<tr class="yr-row"><td>Итого ${curYear}</td><td></td><td class="interest-cell">${fmt(yearInt)}</td><td class="principal-cell">${fmt(yearPrin)}</td>${loan.extraPayment > 0 ? `<td class="extra-cell">${fmt(yearExtra)}</td>` : ''}<td>${fmt(yearTotal)}</td><td></td></tr>`;
+        yearInt = 0; yearPrin = 0; yearTotal = 0; yearExtra = 0;
+      }
+    };
+    rows.forEach(r => {
+      const yr = r.label.split(' ')[1];
+      if (yr !== curYear) { flush(curYear); curYear = yr; }
+      const intPct = r.total > 0 ? Math.round(r.interest / r.total * 100) : 0;
+      html += `<tr>
+        <td>${r.label}</td>
+        <td>${fmt(r.balance)}</td>
+        <td class="interest-cell">${fmt(r.interest)} <span style="color:var(--muted);font-size:10px">${intPct}%</span></td>
+        <td class="principal-cell">${fmt(r.principal)}</td>
+        ${loan.extraPayment > 0 ? `<td class="extra-cell">${fmt(r.extra||0)}</td>` : ''}
+        <td>${fmt(r.total)}</td>
+        <td><div class="bar-wrap"><div class="bar-bg"><div class="bar-int" style="width:${intPct}%"></div></div></div></td>
+      </tr>`;
+      yearInt += r.interest; yearPrin += r.principal; yearTotal += r.total; yearExtra += (r.extra||0);
+    });
+    flush(curYear);
+    return html;
+  }
+
+  return `
+    <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border)">
+      <div class="schedule-toggle" onclick="toggleSchedule(${loan.id})">
+        <span id="sched-arrow-${loan.id}">${isOpen ? '▾' : '▸'}</span>
+        📆 График платежей
+        ${rows.length ? `<span style="color:var(--muted);font-weight:400">(${rows.length} мес)</span>` : ''}
+      </div>
+      <div id="sched-table-${loan.id}" style="display:${isOpen ? 'block' : 'none'}">
+        ${rows.length === 0 ? '<div style="color:var(--muted);font-size:12px;padding:8px 0">Введите данные кредита</div>' : `
+        <div class="schedule-wrap">
+          <table class="schedule-table">
+            <thead><tr>
+              <th>Месяц</th><th>Остаток</th><th>Проценты</th><th>Тело</th>
+              ${loan.extraPayment > 0 ? '<th>Досрочно</th>' : ''}
+              <th>Платёж</th><th>%/тело</th>
+            </tr></thead>
+            <tbody id="sched-rows-${loan.id}">${renderRows(visible)}</tbody>
+          </table>
+          ${!showAll && rows.length > PREVIEW ? `<div class="schedule-show-more" onclick="showAllSchedule(${loan.id})">Показать все ${rows.length} месяцев ▾</div>` : ''}
+          ${showAll && rows.length > PREVIEW ? `<div class="schedule-show-more" onclick="collapseSchedule(${loan.id})">Свернуть ▴</div>` : ''}
+        </div>`}
+      </div>
+    </div>`;
+}
+
+function toggleSchedule(id) {
+  const ss = scheduleState[id] || (scheduleState[id] = { open: false, showAll: false });
+  ss.open = !ss.open;
+  refreshSchedule(id);
+}
+
+function showAllSchedule(id) {
+  const ss = scheduleState[id] || (scheduleState[id] = { open: true, showAll: false });
+  ss.showAll = true;
+  refreshSchedule(id);
+}
+
+function collapseSchedule(id) {
+  const ss = scheduleState[id] || (scheduleState[id] = { open: true, showAll: false });
+  ss.showAll = false;
+  refreshSchedule(id);
+}
+
+function refreshSchedule(id) {
+  const loan = state.loans.find(l => l.id === id); if (!loan) return;
+  const container = document.querySelector(`[data-sched="${id}"]`);
+  if (container) container.outerHTML = renderScheduleTable(loan).replace('<div ', `<div data-sched="${id}" `);
+  // Пересоздаём — ищем по id через innerHTML замену
+  const schedDiv = document.getElementById(`sched-slot-${id}`);
+  if (schedDiv) schedDiv.innerHTML = renderScheduleTable(loan);
 }
 
 function calcLoanStats(loan) {
@@ -372,6 +506,9 @@ function attachLoanEvents(container, loan) {
       else state.loans[idx][field]=parseFloat(inp.value)||0;
       const se = container.querySelector(`#stats-${loan.id}`);
       if(se) se.innerHTML=renderStats(calcLoanStats(state.loans[idx]),state.loans[idx]);
+      // обновляем график платежей если открыт
+      const schedSlot = document.getElementById(`sched-slot-${loan.id}`);
+      if(schedSlot) schedSlot.innerHTML = renderScheduleTable(state.loans[idx]);
       // обновляем summary в свёрнутом виде
       const sm = document.getElementById(`summary-${loan.id}`);
       if(sm && loanOpen[loan.id] === false) { const l=state.loans[idx]; sm.textContent = l.balance ? `${fmt(l.balance)} · ${l.rate}% · ${fmt(l.payment)}/мес` : 'не заполнен'; }
