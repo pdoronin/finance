@@ -296,7 +296,7 @@ function renderLoans() {
 
 function buildLoanHTML(loan) {
   const s = calcLoanStats(loan);
-  const isOpen = loanOpen[loan.id] !== false; // по умолчанию открыт
+  const isOpen = loanOpen[loan.id] === true; // по умолчанию свёрнут
   const arrow = isOpen ? '▾' : '▸';
   const summaryText = loan.balance ? `${fmt(loan.balance)} · ${loan.rate}% · ${fmt(loan.payment)}/мес` : 'не заполнен';
   return `
@@ -485,7 +485,7 @@ function cancelDelete(id) {
 }
 
 function toggleLoan(id) {
-  loanOpen[id] = loanOpen[id] === false ? true : false;
+  loanOpen[id] = loanOpen[id] === true ? false : true;
   const body = document.getElementById(`body-${id}`);
   const arrow = document.getElementById(`arrow-${id}`);
   const summary = document.getElementById(`summary-${id}`);
